@@ -14,9 +14,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
     body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-
     .tela-acesso { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem 1rem; }
-
     .caixa-acesso {
       background: rgba(255,255,255,.98); backdrop-filter: blur(20px);
       padding: 2.2rem 1.8rem; border-radius: 24px;
@@ -24,51 +22,37 @@
       width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,.25);
     }
     .caixa-acesso.larga { max-width: 720px; }
-
     .caixa-acesso h1 {
       background: linear-gradient(135deg,#667eea,#764ba2);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: .4rem;
     }
     .slogan { text-align: center; color: #64748b; font-size: .95rem; margin-bottom: 1.8rem; font-weight: 500; }
-
     .aviso-admin {
       background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border: 2px solid #f59e0b;
-      border-radius: 12px;
-      padding: .7rem 1rem;
-      font-size: .85rem;
-      color: #92400e;
-      margin-bottom: 1.2rem;
-      font-weight: 700;
-      text-align: center;
+      border: 2px solid #f59e0b; border-radius: 12px;
+      padding: .7rem 1rem; font-size: .85rem; color: #92400e;
+      margin-bottom: 1.2rem; font-weight: 700; text-align: center;
     }
-
     .secao { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 1.6rem 0 .9rem; padding-bottom: .5rem; border-bottom: 2px solid #e0e7ff; }
     .secao:first-of-type { margin-top: 0; }
-
     .info-box {
       background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 2px solid #bae6fd;
       border-radius: 12px; padding: .8rem 1rem; font-size: .85rem; color: #0369a1; margin-bottom: 1.1rem; line-height: 1.5;
     }
-
     .campo { margin-bottom: .9rem; }
     .campo label { display: block; font-size: .85rem; font-weight: 700; color: #475569; margin-bottom: .35rem; }
     .campo label .ob { color: #ef4444; }
-
     input, select, textarea {
       width: 100%; padding: .85rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px;
       font-size: 1rem; background: #fafafa; transition: all .3s;
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 4px rgba(102,126,234,.12); }
     textarea { resize: vertical; min-height: 70px; }
-
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
     .full { grid-column: 1 / -1; }
     @media (max-width: 620px) { .grid-2 { grid-template-columns: 1fr; } .caixa-acesso { padding: 1.8rem 1.2rem; } }
-
     .status-cep { font-size: .8rem; color: #667eea; font-weight: 600; margin-top: .3rem; min-height: 1rem; display: block; }
-
     .btn-acesso {
       width: 100%; padding: 1rem; background: linear-gradient(135deg,#667eea,#764ba2);
       color: white; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800;
@@ -76,20 +60,23 @@
     }
     .btn-acesso:hover { transform: translateY(-2px); box-shadow: 0 15px 35px -5px rgba(102,126,234,.55); }
     .btn-acesso:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-
     .erro, .sucesso { display: none; margin-top: 1rem; padding: .9rem; border-radius: 12px; font-weight: 600; font-size: .9rem; text-align: center; }
     .erro { background: #fee2e2; color: #dc2626; }
     .sucesso { background: #dcfce7; color: #16a34a; }
-
     .link-troca { text-align: center; margin-top: 1.4rem; color: #64748b; font-size: .95rem; }
     .link-troca span { color: #667eea; font-weight: 800; cursor: pointer; }
     .link-troca span:hover { text-decoration: underline; }
-
     .loading { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin .8s linear infinite; vertical-align: middle; margin-right: .4rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Loading overlay */
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,.8); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    .loading-overlay.show { display: flex; }
+    .loading-overlay .spinner { width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin .8s linear infinite; }
   </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
 <!-- LOGIN -->
 <div class="tela-acesso" id="telaLogin">
@@ -99,7 +86,7 @@
     <div class="aviso-admin">🔒 Área exclusiva para donos de Pet Shop</div>
     <div class="campo"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" /></div>
     <div class="campo"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••" /></div>
-    <button class="btn-acesso" onclick="fazerLogin()">🔑 Entrar no Painel</button>
+    <button class="btn-acesso" id="btnLogin" onclick="fazerLogin()">🔑 Entrar no Painel</button>
     <div class="erro" id="msgErroLogin">❌ E-mail ou senha incorretos!</div>
     <div class="link-troca">Novo por aqui? <span onclick="mostrarTela('cadastro')">Cadastre seu Pet Shop</span></div>
   </div>
@@ -172,7 +159,25 @@ function mostrarTela(tela) {
   window.scrollTo(0, 0);
 }
 
+function setLoading(show) {
+  document.getElementById("loadingOverlay").classList.toggle("show", show);
+}
+
 // ==================== MÁSCARAS ====================
+function mascararCpf(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 11);
+    v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    el.value = v;
+  });
+}
+function mascararCnpj(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 14);
+    v = v.replace(/(\d{2})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1/$2").replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+    el.value = v;
+  });
+}
 function mascararCep(el) {
   el.addEventListener("input", () => {
     let v = el.value.replace(/\D/g, "").slice(0, 8);
@@ -190,6 +195,8 @@ function mascararTelefone(el) {
     el.value = v;
   });
 }
+mascararCpf(document.getElementById("cadRespCpf"));
+mascararCnpj(document.getElementById("cadLojaCnpj"));
 mascararCep(document.getElementById("cadCep"));
 mascararTelefone(document.getElementById("cadRespTel"));
 mascararTelefone(document.getElementById("cadLojaTel"));
@@ -200,7 +207,7 @@ async function buscarCep(cep) {
   const status = document.getElementById("statusCep");
   status.textContent = "🔍 Buscando endereço...";
   try {
-    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const resp = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g,'')}/json/`);
     const dados = await resp.json();
     if (dados.erro) { status.textContent = "⚠️ CEP não encontrado — preencha manualmente."; return; }
     document.getElementById("cadRua").value = dados.logradouro || "";
@@ -221,20 +228,33 @@ async function fazerLogin() {
   erro.style.display = "none";
   if (!email || !senha) { erro.style.display = "block"; return; }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
-  if (error || !data.user) { erro.style.display = "block"; return; }
+  const btn = document.getElementById("btnLogin");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Entrando...';
 
-  // Verifica se é admin
-  const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", data.user.id).single();
-  
-  if (profile?.tipo !== "admin") {
-    await supabase.auth.signOut();
-    erro.textContent = "⚠️ Esta não é uma conta de Pet Shop. Use o app do cliente.";
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error || !data.user) throw new Error(error?.message || "Credenciais inválidas");
+
+    // Verifica se tem um petshop cadastrado para este usuário
+    const { data: loja, error: lojaErr } = await supabase
+      .from("petshops")
+      .select("id")
+      .eq("usuario_id", data.user.id)
+      .maybeSingle();
+
+    if (!loja) {
+      await supabase.auth.signOut();
+      throw new Error("Esta conta não possui um Pet Shop cadastrado.");
+    }
+
+    window.location.href = "admin.html";
+  } catch (e) {
+    erro.textContent = "❌ " + e.message;
     erro.style.display = "block";
-    return;
+    btn.disabled = false;
+    btn.innerHTML = "🔑 Entrar no Painel";
   }
-
-  window.location.href = "admin.html";
 }
 
 // ==================== CADASTRO PET SHOP ====================
@@ -261,60 +281,111 @@ async function cadastrarPetShop() {
 
   btn.disabled = true;
   btn.innerHTML = '<span class="loading"></span> Cadastrando...';
+  setLoading(true);
 
   try {
+    // 1. Criar usuário no Auth
     const { data: auth, error: authErr } = await supabase.auth.signUp({
-      email: d.resp_email, password: d.senha,
-      options: { data: { nome: d.resp_nome, tipo: 'admin' } }
+      email: d.resp_email,
+      password: d.senha,
+      options: {
+        data: {
+          nome: d.resp_nome,
+          tipo: 'admin'
+        }
+      }
     });
     if (authErr) throw new Error(authErr.message);
+    if (!auth.user) throw new Error("Não foi possível criar o usuário.");
+
     const userId = auth.user.id;
 
-    await supabase.from("profiles").upsert({ id: userId, nome: d.resp_nome, email: d.resp_email, telefone: d.resp_tel, tipo: 'admin' });
-
+    // 2. Criar PetShop (sem os campos de responsável duplicados)
     const { error: shopErr } = await supabase.from("petshops").insert([{
-      usuario_id: userId, responsavel_nome: d.resp_nome, responsavel_email: d.resp_email,
-      responsavel_telefone: d.resp_tel, responsavel_cpf: d.resp_cpf,
-      loja_nome: d.loja_nome, loja_cnpj: d.loja_cnpj, loja_telefone: d.loja_tel,
-      loja_whatsapp: d.loja_whats, loja_email: d.loja_email,
-      cep: d.cep, rua: d.rua, numero: d.numero, complemento: d.complemento,
-      bairro: d.bairro, cidade: d.cidade, estado: d.estado,
-      descricao: d.descricao, horario_funcionamento: d.horario, instagram: d.instagram, site: d.site
+      usuario_id: userId,
+      loja_nome: d.loja_nome,
+      loja_cnpj: d.loja_cnpj,
+      loja_telefone: d.loja_tel,
+      loja_whatsapp: d.loja_whats,
+      loja_email: d.loja_email,
+      cep: d.cep,
+      rua: d.rua,
+      numero: d.numero,
+      complemento: d.complemento,
+      bairro: d.bairro,
+      cidade: d.cidade,
+      estado: d.estado,
+      descricao: d.descricao,
+      horario_funcionamento: d.horario,
+      instagram: d.instagram,
+      site: d.site
     }]);
-    if (shopErr) throw new Error(shopErr.message);
 
-    const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({ email: d.resp_email, password: d.senha });
+    if (shopErr) {
+      // Se falhar, tenta limpar o usuário criado
+      console.error("Erro ao criar petshop:", shopErr);
+      throw new Error("Erro ao cadastrar Pet Shop: " + shopErr.message);
+    }
+
+    // 3. Fazer login automático
+    const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({
+      email: d.resp_email,
+      password: d.senha
+    });
+
     if (!loginErr && login.user) {
       sucesso.textContent = "✅ Pet Shop cadastrado! Entrando no painel...";
       sucesso.style.display = "block";
-      setTimeout(() => window.location.href = "admin.html", 1200);
+      setTimeout(() => window.location.href = "admin.html", 1500);
     } else {
-      sucesso.textContent = "✅ Conta criada! Confirme seu e-mail e faça login.";
+      sucesso.textContent = "✅ Conta criada! Verifique seu e-mail para confirmar e faça login.";
       sucesso.style.display = "block";
-      setTimeout(() => mostrarTela('login'), 2000);
+      setTimeout(() => mostrarTela('login'), 2500);
     }
   } catch (e) {
-    falha("❌ Erro: " + e.message);
+    falha("❌ " + e.message);
     btn.disabled = false;
     btn.innerHTML = "🐾 Cadastrar Meu Pet Shop";
+  } finally {
+    setLoading(false);
   }
 
   function val(id) { return document.getElementById(id).value.trim(); }
-  function falha(msg) { erro.textContent = msg; erro.style.display = "block"; erro.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  function falha(msg) {
+    erro.textContent = msg;
+    erro.style.display = "block";
+    erro.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 }
 
 document.getElementById("loginSenha").addEventListener("keypress", e => e.key === "Enter" && fazerLogin());
 
-// Sessão existente → redireciona se for admin, senão faz logout
+// ==================== VERIFICA SESSÃO AO CARREGAR ====================
 document.addEventListener("DOMContentLoaded", async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", session.user.id).single();
-    if (profile?.tipo === "admin") {
-      window.location.href = "admin.html";
-    } else {
-      await supabase.auth.signOut();
+  setLoading(true);
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      // Verifica se tem petshop
+      const { data: loja } = await supabase
+        .from("petshops")
+        .select("id")
+        .eq("usuario_id", session.user.id)
+        .maybeSingle();
+
+      if (loja) {
+        // Tem petshop → redireciona para admin
+        window.location.href = "admin.html";
+        return;
+      } else {
+        // Não tem petshop → faz logout
+        await supabase.auth.signOut();
+      }
     }
+  } catch (e) {
+    console.error("Erro ao verificar sessão:", e);
+  } finally {
+    setLoading(false);
   }
 });
 </script>
