@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="PetVirtua — Sistema completo para Pet Shops" />
 <title>PetVirtua — Painel Administrativo</title>
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
   window.supabase = createClient(
     "https://xnbysaincrirvsykqgqj.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI",
+    { auth: { persistSession: true, autoRefreshToken: true } }
   );
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -36,10 +38,18 @@ body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 input, select, textarea { font-family: inherit; font-size: .95rem; }
 
+/* ============ STATUS DE CONEXÃO ============ */
+.connection-bar { position: fixed; top: 0; left: 0; right: 0; padding: .4rem; text-align: center; font-size: .78rem; font-weight: 700; z-index: 9998; display: none; }
+.connection-bar.offline { background: var(--danger); color: white; display: block; }
+
 /* ============ LOADING ============ */
 .loading-full { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 1rem; }
 .spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Skeleton */
+.skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; height: 1rem; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
 /* ============ LAYOUT ============ */
 .app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
@@ -77,82 +87,51 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .icon-btn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white; }
 .content { padding: 2rem; flex: 1; min-width: 0; }
 
-/* ============ CARDS DE ESTATÍSTICAS - LINHA ÚNICA ============ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.stat-card {
-  background: var(--card);
-  padding: 1.1rem 1.2rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  gap: .9rem;
-  transition: all .2s;
-  cursor: pointer;
-  min-width: 0;
-}
+/* ============ CARDS DE ESTATÍSTICAS ============ */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card { background: var(--card); padding: 1.1rem 1.2rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: .9rem; transition: all .2s; cursor: pointer; min-width: 0; }
 .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.stat-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
+.stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; }
 .stat-icon.blue { background: #dbeafe; color: #1e40af; }
 .stat-icon.green { background: #d1fae5; color: #065f46; }
 .stat-icon.orange { background: #fed7aa; color: #9a3412; }
 .stat-icon.purple { background: #e9d5ff; color: #6b21a8; }
 .stat-icon.red { background: #fee2e2; color: #991b1b; }
 .stat-info { min-width: 0; flex: 1; }
-.stat-value {
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: -.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.stat-label {
-  font-size: .75rem;
-  color: var(--text-soft);
-  font-weight: 500;
-  margin-bottom: .15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.stat-change {
-  font-size: .7rem;
-  font-weight: 700;
-  margin-top: .15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.stat-value { font-size: 1.35rem; font-weight: 800; letter-spacing: -.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-label { font-size: .75rem; color: var(--text-soft); font-weight: 500; margin-bottom: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-change { font-size: .7rem; font-weight: 700; margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stat-change.up { color: var(--success); }
 .stat-change.down { color: var(--danger); }
 
-/* Tablet: 2 colunas */
-@media (max-width: 1100px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-/* Mobile: 1 coluna */
-@media (max-width: 600px) {
-  .stats-grid { grid-template-columns: 1fr; }
-}
+@media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
+
+/* ============ CARD DE RESUMO (ÚNICO, NA PARTE INFERIOR) ============ */
+.summary-card { margin-top: 1.5rem; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.summary-card .card-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
+.summary-card .card-header h3 { color: white; }
+.summary-card .card-header small { color: rgba(255,255,255,.85); }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.summary-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all .25s; display: flex; align-items: center; gap: .8rem; position: relative; overflow: hidden; }
+.summary-item::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); transform: scaleY(0); transition: transform .25s; }
+.summary-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+.summary-item:hover::before { transform: scaleY(1); }
+.summary-icon { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0; }
+.summary-content { min-width: 0; flex: 1; }
+.summary-title { font-size: .72rem; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.summary-value { font-size: 1.15rem; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: .1rem; }
+.summary-sub { font-size: .7rem; color: var(--text-soft); margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.summary-sub strong { color: var(--success); font-weight: 700; }
+.summary-sub.warn strong { color: var(--warning); }
+.summary-sub.danger strong { color: var(--danger); }
+@media (max-width: 900px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .summary-grid { grid-template-columns: 1fr; } }
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .card-header { padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .card-header h3 { font-size: 1rem; font-weight: 800; }
+.card-header small { font-size: .75rem; color: var(--text-soft); margin-left: auto; padding-left: .8rem; }
 .card-body { padding: 1.3rem; }
 .card-body.nopad { padding: 0; }
 
@@ -164,7 +143,7 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .search-input input:focus { outline: none; border-color: var(--primary); }
 
 /* ============ BUTTONS ============ */
-.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; transition: all .2s; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; transition: all .2s; white-space: nowrap; position: relative; }
 .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 12px rgba(102,126,234,.3); }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(102,126,234,.4); }
 .btn-ghost { background: white; border: 1px solid var(--border); color: var(--text); }
@@ -173,7 +152,9 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .btn-danger:hover { background: #fecaca; }
 .btn-success { background: var(--success); color: white; }
 .btn-sm { padding: .4rem .8rem; font-size: .8rem; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+.btn.loading::after { content:''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; margin-left: .3rem; }
+.btn.loading { pointer-events: none; opacity: .8; }
 
 /* ============ TABLE ============ */
 .table-wrap { overflow-x: auto; }
@@ -199,6 +180,7 @@ tr:hover td { background: #fafbfc; }
 .field .req { color: var(--danger); }
 .field input, .field select, .field textarea { width: 100%; padding: .7rem .9rem; border: 2px solid var(--border); border-radius: 10px; background: white; transition: all .2s; }
 .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,.12); }
+.field input.invalid, .field select.invalid { border-color: var(--danger); }
 .field textarea { resize: vertical; min-height: 70px; }
 .field-grid { display: grid; gap: .9rem; grid-template-columns: repeat(2, 1fr); }
 @media (max-width: 640px) { .field-grid { grid-template-columns: 1fr; } }
@@ -217,7 +199,7 @@ tr:hover td { background: #fafbfc; }
 .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: .6rem; background: #fafbfc; }
 
 /* ============ TOAST ============ */
-.toast-wrap { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: .6rem; }
+.toast-wrap { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: .6rem; max-width: calc(100vw - 3rem); }
 .toast { background: white; padding: .9rem 1.1rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,.15); min-width: 260px; max-width: 380px; display: flex; gap: .7rem; align-items: flex-start; animation: toastIn .3s ease; border-left: 4px solid var(--info); }
 .toast.success { border-left-color: var(--success); }
 .toast.error { border-left-color: var(--danger); }
@@ -226,6 +208,7 @@ tr:hover td { background: #fafbfc; }
 .toast .msg { flex: 1; font-size: .88rem; }
 .toast .msg b { display: block; margin-bottom: .1rem; font-size: .85rem; }
 .toast .msg span { color: var(--text-soft); font-size: .8rem; }
+.toast .undo { font-size: .75rem; color: var(--primary); font-weight: 700; cursor: pointer; margin-top: .3rem; text-decoration: underline; }
 @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } }
 
 /* ============ DASHBOARD ============ */
@@ -261,7 +244,7 @@ tr:hover td { background: #fafbfc; }
 .chat-area { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; }
 .chat-header { padding: 1rem 1.3rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .chat-messages { flex: 1; overflow-y: auto; padding: 1.3rem; background: #f8fafc; display: flex; flex-direction: column; gap: .7rem; }
-.chat-msg { max-width: 70%; padding: .8rem 1rem; border-radius: 16px; font-size: .9rem; line-height: 1.4; }
+.chat-msg { max-width: 70%; padding: .8rem 1rem; border-radius: 16px; font-size: .9rem; line-height: 1.4; word-break: break-word; }
 .chat-msg.cliente { background: white; border: 2px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
 .chat-msg.loja { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
 .chat-msg .autor { font-size: .72rem; font-weight: 700; margin-bottom: .2rem; opacity: .8; }
@@ -287,12 +270,12 @@ tr:hover td { background: #fafbfc; }
 </head>
 <body>
 
+<div class="connection-bar" id="connectionBar">⚠️ Você está offline. As ações serão salvas quando a conexão retornar.</div>
 <div class="loading-full" id="loading"><div class="spinner"></div><div>Carregando PetVirtua...</div></div>
 <div class="toast-wrap" id="toastWrap"></div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 
 <div class="app hidden" id="app">
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-logo">🐾</div>
@@ -335,13 +318,13 @@ tr:hover td { background: #fafbfc; }
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <div class="topbar">
       <button class="btn-menu" onclick="toggleSidebar()">☰</button>
       <div class="topbar-title"><h2 id="pageTitle">Dashboard</h2><p id="pageSubtitle">Visão geral</p></div>
       <div class="topbar-actions">
         <button class="icon-btn" title="Notificações">🔔<span class="dot"></span></button>
+        <button class="icon-btn" title="Atualizar" onclick="atualizarTudo()">🔄</button>
         <button class="icon-btn" title="Ajuda">❓</button>
       </div>
     </div>
@@ -349,7 +332,6 @@ tr:hover td { background: #fafbfc; }
   </main>
 </div>
 
-<!-- MODAL -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal" id="modal">
     <div class="modal-header"><h3 id="modalTitle">Título</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -359,26 +341,91 @@ tr:hover td { background: #fafbfc; }
 </div>
 
 <script>
+/* ================================================================
+   PETVIRTUA — SISTEMA ROBUSTO PARA PET SHOPS
+   Versão: 2.0 — Com camadas de proteção, cache, retry e monitoramento
+================================================================= */
+
 const App = {
-  user: null, loja: null, currentPage: 'dashboard',
-  data: { clientes:[], pets:[], servicos:[], produtos:[], funcionarios:[], agendamentos:[], vendas:[], financeiro:[], os:[], conversas:[], mensagens:[] }
+  user: null,
+  loja: null,
+  currentPage: 'dashboard',
+  online: navigator.onLine,
+  queue: [],
+  charts: {},
+  data: {
+    clientes: [], pets: [], servicos: [], produtos: [],
+    funcionarios: [], agendamentos: [], vendas: [],
+    financeiro: [], os: [], conversas: [], mensagens: []
+  }
 };
 
-const $  = s => document.querySelector(s);
+const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const el = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
-const fmtMoney = v => new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v || 0);
+const fmtMoney = v => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 const fmtDate = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
-const fmtDateTime = d => d ? new Date(d).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '—';
+const fmtDateTime = d => d ? new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 
-function toast(title, msg='', type='info') {
-  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
-  const t = el(`<div class="toast ${type}"><div class="ico">${icons[type]}</div><div class="msg"><b>${title}</b><span>${msg}</span></div></div>`);
-  $('#toastWrap').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; setTimeout(()=>t.remove(), 300); }, 3500);
+/* ============ SEGURANÇA ============ */
+function sanitize(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-function openModal(title, bodyHTML, footerHTML='', size='') {
+function safeString(v, max = 500) {
+  if (v === null || v === undefined) return '';
+  const s = String(v).trim().slice(0, max);
+  return sanitize(s);
+}
+
+/* ============ LOGS ============ */
+const Logger = {
+  history: [],
+  log(level, ctx, msg, data) {
+    const entry = { t: new Date().toISOString(), level, ctx, msg, data };
+    this.history.push(entry);
+    if (this.history.length > 200) this.history.shift();
+    if (level === 'error') console.error(`[${ctx}]`, msg, data);
+  },
+  error(ctx, msg, data) { this.log('error', ctx, msg, data); },
+  info(ctx, msg, data) { this.log('info', ctx, msg, data); }
+};
+
+/* ============ TOAST ROBUSTO ============ */
+function toast(title, msg = '', type = 'info', options = {}) {
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const undo = options.undo ? `<div class="undo" onclick="(${options.undo.toString()})()">Desfazer</div>` : '';
+  const t = el(`
+    <div class="toast ${type}">
+      <div class="ico">${icons[type] || 'ℹ️'}</div>
+      <div class="msg"><b>${safeString(title, 60)}</b><span>${safeString(msg, 150)}</span>${undo}</div>
+    </div>
+  `);
+  $('#toastWrap').appendChild(t);
+  const duration = options.duration || 3500;
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(100%)';
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
+
+function confirmDialog(title, message) {
+  return new Promise(resolve => {
+    openModal(title, `<p style="line-height:1.6;">${safeString(message)}</p>`,
+      `<button class="btn btn-ghost" onclick="window.__confirmResolve(false)">Cancelar</button>
+       <button class="btn btn-danger" onclick="window.__confirmResolve(true)">Confirmar</button>`);
+    window.__confirmResolve = (val) => { closeModal(); resolve(val); };
+  });
+}
+
+function openModal(title, bodyHTML, footerHTML = '', size = '') {
   $('#modalTitle').textContent = title;
   $('#modalBody').innerHTML = bodyHTML;
   $('#modalFooter').innerHTML = footerHTML;
@@ -387,22 +434,79 @@ function openModal(title, bodyHTML, footerHTML='', size='') {
 }
 function closeModal() { $('#modalBackdrop').classList.remove('open'); }
 $('#modalBackdrop').addEventListener('click', e => { if (e.target.id === 'modalBackdrop') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 function toggleSidebar() { $('#sidebar').classList.toggle('open'); $('#sidebarBackdrop').classList.toggle('open'); }
 
-function mask(el, fn) { el.addEventListener('input', () => { el.value = fn(el.value); }); return el; }
+/* ============ DEBOUNCE ============ */
+function debounce(fn, wait = 300) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+/* ============ MÁSCARAS ============ */
+function mask(el, fn) {
+  if (!el) return;
+  el.addEventListener('input', () => { el.value = fn(el.value); });
+  return el;
+}
 const masks = {
-  cpf: v => v.replace(/\D/g,'').slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'),
-  cnpj: v => v.replace(/\D/g,'').slice(0,14).replace(/(\d{2})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1/$2').replace(/(\d{4})(\d{1,2})$/,'$1-$2'),
-  tel: v => { v = v.replace(/\D/g,'').slice(0,11); if (v.length>10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3'); if (v.length>6) return v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3'); if (v.length>2) return v.replace(/(\d{2})(\d{0,6})/,'($1) $2'); return v; },
-  cep: v => { v = v.replace(/\D/g,'').slice(0,8); return v.length>5 ? v.slice(0,5)+'-'+v.slice(5) : v; }
+  cpf: v => v.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'),
+  cnpj: v => v.replace(/\D/g, '').slice(0, 14).replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2'),
+  tel: v => {
+    v = v.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    if (v.length > 6) return v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    if (v.length > 2) return v.replace(/(\d{2})(\d{0,6})/, '($1) $2');
+    return v;
+  },
+  cep: v => { v = v.replace(/\D/g, '').slice(0, 8); return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v; }
 };
 
+/* ============ SUPABASE WRAPPER COM RETRY ============ */
+async function sbCall(fn, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const result = await fn();
+      if (result.error) throw result.error;
+      return result;
+    } catch (e) {
+      Logger.error('supabase', e.message, e);
+      if (i === retries || !App.online) throw e;
+      await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+}
+
+/* ============ MONITOR ONLINE/OFFLINE ============ */
+window.addEventListener('online', () => {
+  App.online = true;
+  $('#connectionBar').classList.remove('offline');
+  toast('Conectado!', 'Sincronizando...', 'success');
+  processarFila();
+});
+window.addEventListener('offline', () => {
+  App.online = false;
+  $('#connectionBar').classList.add('offline');
+  toast('Sem conexão', 'Verifique sua internet', 'warning');
+});
+
+async function processarFila() {
+  while (App.queue.length > 0) {
+    const action = App.queue.shift();
+    try { await action(); } catch (e) { Logger.error('queue', e.message); }
+  }
+}
+
+/* ============ AUTH ============ */
 async function checkAuth() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sbCall(() => supabase.auth.getSession());
     if (!session) { window.location.href = 'index.html'; return; }
-    const { data: loja } = await supabase.from('petshops').select('*').eq('usuario_id', session.user.id).maybeSingle();
+    const { data: loja } = await sbCall(() => supabase.from('petshops').select('*').eq('usuario_id', session.user.id).maybeSingle());
     if (!loja) { await supabase.auth.signOut(); window.location.href = 'index.html'; return; }
     App.user = session.user;
     App.loja = loja;
@@ -414,47 +518,101 @@ async function checkAuth() {
     await carregarTudo();
     renderPage('dashboard');
     iniciarRealtimeChatAdmin();
-  } catch (e) { console.error(e); window.location.href = 'index.html'; }
+    iniciarAutoRefresh();
+  } catch (e) {
+    Logger.error('auth', e.message, e);
+    toast('Erro de autenticação', e.message, 'error');
+    setTimeout(() => window.location.href = 'index.html', 2000);
+  }
 }
 
 async function logout() {
-  if (!confirm('Deseja realmente sair?')) return;
-  await supabase.auth.signOut();
-  window.location.href = 'index.html';
+  const ok = await confirmDialog('Sair do sistema', 'Tem certeza que deseja encerrar a sessão?');
+  if (!ok) return;
+  try {
+    await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
+/* ============ CARREGAMENTO ROBUSTO ============ */
 async function carregarTudo() {
   if (!App.loja.id) return;
   const id = App.loja.id;
+
+  const safe = async (query) => {
+    try {
+      const r = await sbCall(query);
+      return r.data || [];
+    } catch (e) {
+      Logger.error('load', e.message);
+      return [];
+    }
+  };
+
   const [clientes, pets, servicos, produtos, funcionarios, agendamentos, vendas, financeiro, os, conversas] = await Promise.all([
-    supabase.from('clientes').select('*').eq('loja_id', id).order('nome'),
-    supabase.from('pets').select('*').eq('loja_id', id).order('nome'),
-    supabase.from('servicos').select('*').eq('loja_id', id).order('nome'),
-    supabase.from('produtos').select('*').eq('loja_id', id).order('nome'),
-    supabase.from('funcionarios').select('*').eq('loja_id', id).order('nome'),
-    supabase.from('agendamentos').select('*, pets(nome), servicos(nome), funcionarios(nome)').eq('loja_id', id).order('data_hora', { ascending: false }),
-    supabase.from('vendas').select('*, clientes(nome)').eq('loja_id', id).order('created_at', { ascending: false }),
-    supabase.from('financeiro').select('*').eq('loja_id', id).order('data_vencimento', { ascending: false }),
-    supabase.from('os').select('*, pets(nome), clientes(nome)').eq('loja_id', id).order('created_at', { ascending: false }),
-    supabase.from('conversas').select('*, clientes(nome, email, telefone)').eq('loja_id', id).order('ultima_atualizacao', { ascending: false })
+    safe(() => supabase.from('clientes').select('*').eq('loja_id', id).order('nome')),
+    safe(() => supabase.from('pets').select('*').eq('loja_id', id).order('nome')),
+    safe(() => supabase.from('servicos').select('*').eq('loja_id', id).order('nome')),
+    safe(() => supabase.from('produtos').select('*').eq('loja_id', id).order('nome')),
+    safe(() => supabase.from('funcionarios').select('*').eq('loja_id', id).order('nome')),
+    safe(() => supabase.from('agendamentos').select('*, pets(nome), servicos(nome), funcionarios(nome)').eq('loja_id', id).order('data_hora', { ascending: false })),
+    safe(() => supabase.from('vendas').select('*, clientes(nome)').eq('loja_id', id).order('created_at', { ascending: false })),
+    safe(() => supabase.from('financeiro').select('*').eq('loja_id', id).order('data_vencimento', { ascending: false })),
+    safe(() => supabase.from('os').select('*, pets(nome), clientes(nome)').eq('loja_id', id).order('created_at', { ascending: false })),
+    safe(() => supabase.from('conversas').select('*, clientes(nome, email, telefone)').eq('loja_id', id).order('ultima_atualizacao', { ascending: false }))
   ]);
-  App.data.clientes = clientes.data || [];
-  App.data.pets = pets.data || [];
-  App.data.servicos = servicos.data || [];
-  App.data.produtos = produtos.data || [];
-  App.data.funcionarios = funcionarios.data || [];
-  App.data.agendamentos = agendamentos.data || [];
-  App.data.vendas = vendas.data || [];
-  App.data.financeiro = financeiro.data || [];
-  App.data.os = os.data || [];
-  App.data.conversas = conversas.data || [];
-  const hoje = new Date().toISOString().slice(0,10);
-  $('#agendaHoje').textContent = App.data.agendamentos.filter(a => a.data_hora?.slice(0,10) === hoje).length;
-  const totalNaoLidas = App.data.conversas.reduce((s,c) => s + (c.nao_lidas_loja || 0), 0);
-  const badge = $('#badgeChatAdmin');
-  if (badge) { badge.textContent = totalNaoLidas; badge.style.display = totalNaoLidas > 0 ? 'inline-block' : 'none'; }
+
+  App.data = { clientes, pets, servicos, produtos, funcionarios, agendamentos, vendas, financeiro, os, conversas, mensagens: [] };
+
+  // Salvar no cache
+  try {
+    sessionStorage.setItem('petvirtua_cache_' + id, JSON.stringify({ ts: Date.now(), data: App.data }));
+  } catch (e) {}
+
+  atualizarBadges();
 }
 
+function atualizarBadges() {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const agendaHoje = App.data.agendamentos.filter(a => a.data_hora?.slice(0, 10) === hoje).length;
+  $('#agendaHoje').textContent = agendaHoje;
+  $('#agendaHoje').style.display = agendaHoje > 0 ? 'inline-block' : 'none';
+
+  const totalNaoLidas = App.data.conversas.reduce((s, c) => s + (c.nao_lidas_loja || 0), 0);
+  const badge = $('#badgeChatAdmin');
+  if (badge) {
+    badge.textContent = totalNaoLidas;
+    badge.style.display = totalNaoLidas > 0 ? 'inline-block' : 'none';
+  }
+}
+
+async function atualizarTudo() {
+  const btn = event?.target?.closest('.icon-btn');
+  btn?.classList.add('loading');
+  try {
+    await carregarTudo();
+    renderPage(App.currentPage);
+    toast('Atualizado', 'Dados sincronizados', 'success');
+  } catch (e) {
+    toast('Erro', e.message, 'error');
+  } finally {
+    setTimeout(() => btn?.classList.remove('loading'), 400);
+  }
+}
+
+function iniciarAutoRefresh() {
+  // Atualização automática a cada 5 minutos se estiver online
+  setInterval(() => {
+    if (App.online && document.visibilityState === 'visible') {
+      carregarTudo().then(() => {
+        if (App.currentPage === 'dashboard') renderPage('dashboard');
+      });
+    }
+  }, 5 * 60 * 1000);
+}
+
+/* ============ NAVEGAÇÃO ============ */
 $$('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     $$('.nav-item').forEach(i => i.classList.remove('active'));
@@ -467,37 +625,54 @@ $$('.nav-item').forEach(item => {
 function renderPage(page) {
   App.currentPage = page;
   const pages = {
-    dashboard:    ['Dashboard', 'Visão geral do seu Pet Shop'],
-    agenda:       ['Agenda', 'Gerencie os atendimentos'],
-    chat:         ['Chat Clientes', 'Converse em tempo real'],
-    clientes:     ['Clientes', 'Cadastro de tutores'],
-    pets:         ['Pets', 'Cadastro dos animais'],
-    servicos:     ['Serviços', 'Catálogo de serviços'],
-    os:           ['Ordens de Serviço', 'Atendimentos em andamento'],
-    produtos:     ['Produtos / Estoque', 'Controle de mercadorias'],
-    vendas:       ['Vendas / PDV', 'Registrar vendas'],
-    financeiro:   ['Financeiro', 'Contas a pagar e receber'],
+    dashboard: ['Dashboard', 'Visão geral do seu Pet Shop'],
+    agenda: ['Agenda', 'Gerencie os atendimentos'],
+    chat: ['Chat Clientes', 'Converse em tempo real'],
+    clientes: ['Clientes', 'Cadastro de tutores'],
+    pets: ['Pets', 'Cadastro dos animais'],
+    servicos: ['Serviços', 'Catálogo de serviços'],
+    os: ['Ordens de Serviço', 'Atendimentos em andamento'],
+    produtos: ['Produtos / Estoque', 'Controle de mercadorias'],
+    vendas: ['Vendas / PDV', 'Registrar vendas'],
+    financeiro: ['Financeiro', 'Contas a pagar e receber'],
     funcionarios: ['Funcionários', 'Gestão da equipe'],
-    relatorios:   ['Relatórios', 'Análises e métricas'],
-    config:       ['Configurações', 'Dados do Pet Shop']
+    relatorios: ['Relatórios', 'Análises e métricas'],
+    config: ['Configurações', 'Dados do Pet Shop']
   };
-  const [title, subtitle] = pages[page] || ['—',''];
+  const [title, subtitle] = pages[page] || ['—', ''];
   $('#pageTitle').textContent = title;
   $('#pageSubtitle').textContent = subtitle;
-  const fn = Page[page]; if (fn) fn();
+  const fn = Page[page];
+  if (fn) {
+    try {
+      // Destrói charts anteriores
+      Object.values(App.charts).forEach(c => c?.destroy?.());
+      App.charts = {};
+      fn();
+    } catch (e) {
+      Logger.error('render', e.message, e);
+      $('#pageContent').innerHTML = `<div class="empty"><div class="icon">⚠️</div>Erro ao carregar a página.<br><button class="btn btn-primary" style="margin-top:1rem" onclick="renderPage('${page}')">Tentar novamente</button></div>`;
+    }
+  }
 }
 
 const Page = {};
 
+/* ================================================================
+   DASHBOARD — COM CARD DE RESUMO ÚNICO NA PARTE INFERIOR
+================================================================= */
 Page.dashboard = () => {
-  const hoje = new Date().toISOString().slice(0,10);
-  const mesAtual = new Date().toISOString().slice(0,7);
-  const agsHoje = App.data.agendamentos.filter(a => a.data_hora?.slice(0,10) === hoje);
-  const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0,7) === mesAtual);
-  const totalMes = vendasMes.reduce((s,v) => s + (v.total || 0), 0);
-  const receitaMes = App.data.financeiro.filter(f => f.tipo === 'receita' && f.status === 'pago' && f.data_pagamento?.slice(0,7) === mesAtual).reduce((s,f)=>s+f.valor,0);
-  const despesaMes = App.data.financeiro.filter(f => f.tipo === 'despesa' && f.status === 'pago' && f.data_pagamento?.slice(0,7) === mesAtual).reduce((s,f)=>s+f.valor,0);
-  const naoLidas = App.data.conversas.reduce((s,c) => s + (c.nao_lidas_loja || 0), 0);
+  const hoje = new Date().toISOString().slice(0, 10);
+  const mesAtual = new Date().toISOString().slice(0, 7);
+
+  const agsHoje = App.data.agendamentos.filter(a => a.data_hora?.slice(0, 10) === hoje);
+  const agsProximos = App.data.agendamentos.filter(a => a.data_hora >= new Date().toISOString() && a.status !== 'cancelado').slice(0, 6);
+  const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0, 7) === mesAtual);
+  const totalMes = vendasMes.reduce((s, v) => s + (v.total || 0), 0);
+  const receitaMes = App.data.financeiro.filter(f => f.tipo === 'receita' && f.status === 'pago' && f.data_pagamento?.slice(0, 7) === mesAtual).reduce((s, f) => s + f.valor, 0);
+  const despesaMes = App.data.financeiro.filter(f => f.tipo === 'despesa' && f.status === 'pago' && f.data_pagamento?.slice(0, 7) === mesAtual).reduce((s, f) => s + f.valor, 0);
+  const naoLidas = App.data.conversas.reduce((s, c) => s + (c.nao_lidas_loja || 0), 0);
+  const estoqueBaixo = App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo || 0)).length;
 
   const html = `
     <div class="stats-grid">
@@ -546,18 +721,18 @@ Page.dashboard = () => {
 
     <div class="dashboard-grid">
       <div class="card">
-        <div class="card-header"><h3>📈 Faturamento últimos 7 dias</h3></div>
+        <div class="card-header"><h3>📈 Faturamento últimos 7 dias</h3><small>Atualizado agora</small></div>
         <div class="card-body"><canvas id="chartVendas" height="100"></canvas></div>
       </div>
       <div class="card">
         <div class="card-header"><h3>🔔 Próximos Agendamentos</h3></div>
         <div class="card-body nopad" style="padding:.5rem 1rem;">
-          ${agsHoje.length === 0 ? '<div class="empty"><div class="icon">📭</div>Nenhum agendamento hoje</div>' :
-            agsHoje.slice(0,6).map(a => `
+          ${agsProximos.length === 0 ? '<div class="empty"><div class="icon">📭</div>Nenhum agendamento próximo</div>' :
+            agsProximos.map(a => `
               <div class="timeline-item">
                 <div class="timeline-icon" style="background:#dbeafe;color:#1e40af;">🐾</div>
-                <div class="timeline-text"><strong>${a.pets?.nome || 'Pet'}</strong><span>${a.servicos?.nome || '—'} • ${fmtMoney(a.valor||0)}</span></div>
-                <div class="timeline-time">${new Date(a.data_hora).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+                <div class="timeline-text"><strong>${safeString(a.pets?.nome || 'Pet')}</strong><span>${safeString(a.servicos?.nome || '—')} • ${fmtMoney(a.valor || 0)}</span></div>
+                <div class="timeline-time">${fmtDateTime(a.data_hora)}</div>
               </div>`).join('')}
         </div>
       </div>
@@ -573,31 +748,79 @@ Page.dashboard = () => {
         <div class="card-body">
           <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px dashed var(--border);"><span>Receitas</span><strong style="color:var(--success);">${fmtMoney(receitaMes)}</strong></div>
           <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px dashed var(--border);"><span>Despesas</span><strong style="color:var(--danger);">${fmtMoney(despesaMes)}</strong></div>
-          <div style="display:flex;justify-content:space-between;padding:.9rem 0;"><span style="font-weight:800;">Saldo</span><strong style="font-size:1.2rem;color:${receitaMes-despesaMes>=0?'var(--success)':'var(--danger)'};">${fmtMoney(receitaMes-despesaMes)}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:.9rem 0;"><span style="font-weight:800;">Saldo</span><strong style="font-size:1.2rem;color:${receitaMes - despesaMes >= 0 ? 'var(--success)' : 'var(--danger)'};">${fmtMoney(receitaMes - despesaMes)}</strong></div>
+          ${estoqueBaixo > 0 ? `<div style="margin-top:1rem;padding:.8rem;background:#fef3c7;border-radius:8px;font-size:.82rem;">⚠️ <strong>${estoqueBaixo} produto(s)</strong> com estoque baixo</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- CARD ÚNICO DE RESUMO — NA PARTE INFERIOR -->
+    <!-- =========================================== -->
+    <div class="summary-card">
+      <div class="card-header">
+        <h3>📋 Resumo Rápido</h3>
+        <small>Atualizado em tempo real</small>
+      </div>
+      <div class="card-body">
+        <div class="summary-grid">
+          <div class="summary-item" onclick="renderPage('agenda')">
+            <div class="summary-icon" style="background:#dbeafe;color:#1e40af;">📅</div>
+            <div class="summary-content">
+              <div class="summary-title">Agendamentos Hoje</div>
+              <div class="summary-value">${agsHoje.length}</div>
+              <div class="summary-sub">▲ <strong>${App.data.agendamentos.length}</strong> no total</div>
+            </div>
+          </div>
+          <div class="summary-item" onclick="renderPage('vendas')">
+            <div class="summary-icon" style="background:#d1fae5;color:#065f46;">💰</div>
+            <div class="summary-content">
+              <div class="summary-title">Vendas no Mês</div>
+              <div class="summary-value">${fmtMoney(totalMes)}</div>
+              <div class="summary-sub">▲ <strong>${vendasMes.length}</strong> vendas</div>
+            </div>
+          </div>
+          <div class="summary-item" onclick="renderPage('clientes')">
+            <div class="summary-icon" style="background:#fed7aa;color:#9a3412;">👥</div>
+            <div class="summary-content">
+              <div class="summary-title">Clientes</div>
+              <div class="summary-value">${App.data.clientes.length}</div>
+              <div class="summary-sub">▲ <strong>${App.data.pets.length}</strong> pets</div>
+            </div>
+          </div>
+          <div class="summary-item" onclick="renderPage('chat')">
+            <div class="summary-icon" style="background:#e9d5ff;color:#6b21a8;">💬</div>
+            <div class="summary-content">
+              <div class="summary-title">Chat</div>
+              <div class="summary-value">${App.data.conversas.length}</div>
+              <div class="summary-sub ${naoLidas > 0 ? 'warn' : ''}">${naoLidas > 0 ? '⚠' : '✓'} <strong>${naoLidas}</strong> não lidas</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `;
   $('#pageContent').innerHTML = html;
 
-  const ultimos7 = [...Array(7)].map((_,i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6-i));
-    const key = d.toISOString().slice(0,10);
-    const total = App.data.vendas.filter(v => v.created_at?.slice(0,10) === key).reduce((s,v)=>s+(v.total||0),0);
-    return { label: d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}), total };
+  const ultimos7 = [...Array(7)].map((_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    const key = d.toISOString().slice(0, 10);
+    const total = App.data.vendas.filter(v => v.created_at?.slice(0, 10) === key).reduce((s, v) => s + (v.total || 0), 0);
+    return { label: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), total };
   });
-  new Chart($('#chartVendas'), {
+  App.charts.vendas = new Chart($('#chartVendas'), {
     type: 'line',
-    data: { labels: ultimos7.map(x=>x.label), datasets: [{ label:'Vendas', data: ultimos7.map(x=>x.total), borderColor:'#667eea', backgroundColor:'rgba(102,126,234,.1)', fill:true, tension:.4 }] },
-    options: { plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'R$ '+v } } } }
+    data: { labels: ultimos7.map(x => x.label), datasets: [{ label: 'Vendas', data: ultimos7.map(x => x.total), borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,.1)', fill: true, tension: .4 }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v } } } }
   });
-  new Chart($('#chartFluxo'), {
+  App.charts.fluxo = new Chart($('#chartFluxo'), {
     type: 'bar',
-    data: { labels: ['Receitas','Despesas','Saldo'], datasets: [{ data: [receitaMes, despesaMes, receitaMes-despesaMes], backgroundColor: ['#10b981','#ef4444','#667eea'] }] },
-    options: { plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'R$ '+v } } } }
+    data: { labels: ['Receitas', 'Despesas', 'Saldo'], datasets: [{ data: [receitaMes, despesaMes, receitaMes - despesaMes], backgroundColor: ['#10b981', '#ef4444', '#667eea'] }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v } } } }
   });
 };
 
+/* ============ AGENDA ============ */
 Page.agenda = () => {
   const ags = App.data.agendamentos;
   $('#pageContent').innerHTML = `
@@ -621,53 +844,76 @@ Page.agenda = () => {
 function renderAgRows(ags) {
   if (!ags.length) return '<tr><td colspan="7" class="empty"><div class="icon">📅</div>Nenhum agendamento</td></tr>';
   return ags.map(a => {
-    const st = { agendado:['badge-blue','Agendado'], em_andamento:['badge-yellow','Em andamento'], concluido:['badge-green','Concluído'], cancelado:['badge-red','Cancelado'] }[a.status] || ['badge-gray', a.status];
+    const st = { agendado: ['badge-blue', 'Agendado'], em_andamento: ['badge-yellow', 'Em andamento'], concluido: ['badge-green', 'Concluído'], cancelado: ['badge-red', 'Cancelado'] }[a.status] || ['badge-gray', a.status];
     return `<tr>
-      <td>${fmtDateTime(a.data_hora)}</td><td><strong>${a.pets?.nome||'—'}</strong></td>
-      <td>${a.servicos?.nome||'—'}</td><td>${a.funcionarios?.nome||'—'}</td>
+      <td>${fmtDateTime(a.data_hora)}</td><td><strong>${safeString(a.pets?.nome || '—')}</strong></td>
+      <td>${safeString(a.servicos?.nome || '—')}</td><td>${safeString(a.funcionarios?.nome || '—')}</td>
       <td>${fmtMoney(a.valor)}</td><td><span class="badge-pill ${st[0]}">${st[1]}</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="formAgendamento('${a.id}')">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="apagar('agendamentos','${a.id}')">🗑</button></td>
     </tr>`;
   }).join('');
 }
-function filtrarAgenda(q) { q=q.toLowerCase(); $('#tabelaAgenda tbody').innerHTML = renderAgRows(App.data.agendamentos.filter(a => (a.pets?.nome||'').toLowerCase().includes(q) || (a.servicos?.nome||'').toLowerCase().includes(q))); }
-function filtrarStatusAgenda(s) { $('#tabelaAgenda tbody').innerHTML = renderAgRows(s ? App.data.agendamentos.filter(a => a.status === s) : App.data.agendamentos); }
+const filtrarAgenda = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabelaAgenda tbody').innerHTML = renderAgRows(App.data.agendamentos.filter(a => (a.pets?.nome || '').toLowerCase().includes(q) || (a.servicos?.nome || '').toLowerCase().includes(q)));
+});
+function filtrarStatusAgenda(s) {
+  $('#tabelaAgenda tbody').innerHTML = renderAgRows(s ? App.data.agendamentos.filter(a => a.status === s) : App.data.agendamentos);
+}
 
 async function formAgendamento(id) {
   const ag = id ? App.data.agendamentos.find(x => x.id == id) : null;
-  const petsOpts = App.data.pets.map(p => `<option value="${p.id}" ${ag?.pet_id==p.id?'selected':''}>${p.nome}</option>`).join('');
-  const srvOpts = App.data.servicos.map(s => `<option value="${s.id}" data-preco="${s.preco}" ${ag?.servico_id==s.id?'selected':''}>${s.nome} — ${fmtMoney(s.preco)}</option>`).join('');
-  const funOpts = `<option value="">—</option>` + App.data.funcionarios.filter(f=>f.ativo!==false).map(f => `<option value="${f.id}" ${ag?.profissional_id==f.id?'selected':''}>${f.nome}</option>`).join('');
+  const petsOpts = App.data.pets.map(p => `<option value="${p.id}" ${ag?.pet_id == p.id ? 'selected' : ''}>${safeString(p.nome)}</option>`).join('');
+  const srvOpts = App.data.servicos.map(s => `<option value="${s.id}" data-preco="${s.preco}" ${ag?.servico_id == s.id ? 'selected' : ''}>${safeString(s.nome)} — ${fmtMoney(s.preco)}</option>`).join('');
+  const funOpts = `<option value="">—</option>` + App.data.funcionarios.filter(f => f.ativo !== false).map(f => `<option value="${f.id}" ${ag?.profissional_id == f.id ? 'selected' : ''}>${safeString(f.nome)}</option>`).join('');
   openModal(ag ? 'Editar Agendamento' : 'Novo Agendamento', `
     <div class="field-grid">
       <div class="field"><label>Pet <span class="req">*</span></label><select id="f_pet" onchange="autoPreco()"><option value="">Selecione</option>${petsOpts}</select></div>
       <div class="field"><label>Serviço <span class="req">*</span></label><select id="f_servico" onchange="autoPreco()"><option value="">Selecione</option>${srvOpts}</select></div>
-      <div class="field"><label>Data/Hora <span class="req">*</span></label><input type="datetime-local" id="f_data" value="${ag?.data_hora?.slice(0,16)||''}"></div>
+      <div class="field"><label>Data/Hora <span class="req">*</span></label><input type="datetime-local" id="f_data" value="${ag?.data_hora?.slice(0, 16) || ''}" min="${new Date().toISOString().slice(0, 16)}"></div>
       <div class="field"><label>Profissional</label><select id="f_func">${funOpts}</select></div>
-      <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="f_valor" value="${ag?.valor||''}"></div>
+      <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" min="0" id="f_valor" value="${ag?.valor || ''}"></div>
       <div class="field"><label>Status</label><select id="f_status">
-        <option value="agendado" ${ag?.status==='agendado'?'selected':''}>Agendado</option>
-        <option value="em_andamento" ${ag?.status==='em_andamento'?'selected':''}>Em andamento</option>
-        <option value="concluido" ${ag?.status==='concluido'?'selected':''}>Concluído</option>
-        <option value="cancelado" ${ag?.status==='cancelado'?'selected':''}>Cancelado</option>
+        <option value="agendado" ${ag?.status === 'agendado' ? 'selected' : ''}>Agendado</option>
+        <option value="em_andamento" ${ag?.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+        <option value="concluido" ${ag?.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+        <option value="cancelado" ${ag?.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
       </select></div>
-      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="f_obs">${ag?.observacoes||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="f_obs" maxlength="500">${safeString(ag?.observacoes || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarAgendamento('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarAg" onclick="salvarAgendamento('${id || ''}')">💾 Salvar</button>`);
 }
 function autoPreco() { const opt = $('#f_servico').options[$('#f_servico').selectedIndex]; if (opt?.dataset.preco) $('#f_valor').value = opt.dataset.preco; }
 async function salvarAgendamento(id) {
-  const d = { pet_id: $('#f_pet').value, servico_id: $('#f_servico').value, data_hora: $('#f_data').value, profissional_id: $('#f_func').value || null, valor: parseFloat($('#f_valor').value) || 0, status: $('#f_status').value, observacoes: $('#f_obs').value, loja_id: App.loja.id };
-  if (!d.pet_id || !d.servico_id || !d.data_hora) return toast('Obrigatório', 'Preencha pet, serviço e data', 'warning');
+  const btn = $('#btnSalvarAg');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('agendamentos').update(d).eq('id', id);
-    else await supabase.from('agendamentos').insert([d]);
+    const d = {
+      pet_id: $('#f_pet').value,
+      servico_id: $('#f_servico').value,
+      data_hora: $('#f_data').value,
+      profissional_id: $('#f_func').value || null,
+      valor: parseFloat($('#f_valor').value) || 0,
+      status: $('#f_status').value,
+      observacoes: $('#f_obs').value.slice(0, 500),
+      loja_id: App.loja.id
+    };
+    if (!d.pet_id || !d.servico_id || !d.data_hora) {
+      toast('Obrigatório', 'Preencha pet, serviço e data', 'warning');
+      return;
+    }
+    if (id) await sbCall(() => supabase.from('agendamentos').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('agendamentos').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Criado', 'success');
-    closeModal(); await carregarTudo(); renderPage('agenda');
+    closeModal();
+    await carregarTudo();
+    renderPage('agenda');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ CLIENTES ============ */
 Page.clientes = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -683,40 +929,61 @@ function renderCliRows(lista) {
   if (!lista.length) return '<tr><td colspan="6" class="empty"><div class="icon">👥</div>Nenhum cliente</td></tr>';
   return lista.map(c => {
     const qtdPets = App.data.pets.filter(p => p.cliente_id == c.id).length;
-    return `<tr><td><strong>${c.nome}</strong></td><td>${c.cpf||'—'}</td><td>${c.telefone||'—'}</td><td>${c.email||'—'}</td>
+    return `<tr><td><strong>${safeString(c.nome)}</strong></td><td>${safeString(c.cpf || '—')}</td><td>${safeString(c.telefone || '—')}</td><td>${safeString(c.email || '—')}</td>
       <td><span class="badge-pill badge-blue">${qtdPets}</span></td>
       <td><button class="btn btn-ghost btn-sm" onclick="formCliente('${c.id}')">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="apagar('clientes','${c.id}')">🗑</button></td></tr>`;
   }).join('');
 }
-function filtrarClientes(q) { q=q.toLowerCase(); $('#tabCli tbody').innerHTML = renderCliRows(App.data.clientes.filter(c => c.nome.toLowerCase().includes(q) || (c.cpf||'').includes(q))); }
+const filtrarClientes = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabCli tbody').innerHTML = renderCliRows(App.data.clientes.filter(c => c.nome.toLowerCase().includes(q) || (c.cpf || '').includes(q)));
+});
 function formCliente(id) {
   const c = id ? App.data.clientes.find(x => x.id == id) : null;
   openModal(c ? 'Editar Cliente' : 'Novo Cliente', `
     <div class="field-grid">
-      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="c_nome" value="${c?.nome||''}"></div>
-      <div class="field"><label>CPF</label><input id="c_cpf" value="${c?.cpf||''}" placeholder="000.000.000-00"></div>
-      <div class="field"><label>Telefone <span class="req">*</span></label><input id="c_tel" value="${c?.telefone||''}"></div>
-      <div class="field"><label>E-mail</label><input id="c_email" type="email" value="${c?.email||''}"></div>
-      <div class="field"><label>Data Nasc.</label><input id="c_nasc" type="date" value="${c?.data_nascimento||''}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Endereço</label><input id="c_end" value="${c?.endereco||''}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="c_obs">${c?.observacoes||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="c_nome" maxlength="100" value="${safeString(c?.nome || '')}"></div>
+      <div class="field"><label>CPF</label><input id="c_cpf" value="${safeString(c?.cpf || '')}" placeholder="000.000.000-00"></div>
+      <div class="field"><label>Telefone <span class="req">*</span></label><input id="c_tel" maxlength="15" value="${safeString(c?.telefone || '')}"></div>
+      <div class="field"><label>E-mail</label><input id="c_email" type="email" maxlength="100" value="${safeString(c?.email || '')}"></div>
+      <div class="field"><label>Data Nasc.</label><input id="c_nasc" type="date" value="${c?.data_nascimento || ''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Endereço</label><input id="c_end" maxlength="200" value="${safeString(c?.endereco || '')}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="c_obs" maxlength="500">${safeString(c?.observacoes || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarCliente('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarCli" onclick="salvarCliente('${id || ''}')">💾 Salvar</button>`);
   if ($('#c_cpf')) mask($('#c_cpf'), masks.cpf);
   if ($('#c_tel')) mask($('#c_tel'), masks.tel);
 }
 async function salvarCliente(id) {
-  const d = { nome: $('#c_nome').value.trim(), cpf: $('#c_cpf').value, telefone: $('#c_tel').value, email: $('#c_email').value, data_nascimento: $('#c_nasc').value || null, endereco: $('#c_end').value, observacoes: $('#c_obs').value, loja_id: App.loja.id };
-  if (!d.nome || !d.telefone) return toast('Obrigatório', 'Nome e telefone', 'warning');
+  const btn = $('#btnSalvarCli');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('clientes').update(d).eq('id', id);
-    else await supabase.from('clientes').insert([d]);
+    const d = {
+      nome: $('#c_nome').value.trim().slice(0, 100),
+      cpf: $('#c_cpf').value,
+      telefone: $('#c_tel').value,
+      email: $('#c_email').value.trim().slice(0, 100),
+      data_nascimento: $('#c_nasc').value || null,
+      endereco: $('#c_end').value.slice(0, 200),
+      observacoes: $('#c_obs').value.slice(0, 500),
+      loja_id: App.loja.id
+    };
+    if (!d.nome || !d.telefone) {
+      toast('Obrigatório', 'Nome e telefone', 'warning');
+      return;
+    }
+    if (id) await sbCall(() => supabase.from('clientes').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('clientes').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Cadastrado', 'success');
-    closeModal(); await carregarTudo(); renderPage('clientes');
+    closeModal();
+    await carregarTudo();
+    renderPage('clientes');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ PETS ============ */
 Page.pets = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -733,48 +1000,73 @@ function renderPetRows(lista) {
   if (!lista.length) return '<tr><td colspan="6" class="empty"><div class="icon">🐕</div>Nenhum pet</td></tr>';
   return lista.map(p => {
     const tutor = App.data.clientes.find(c => c.id == p.cliente_id)?.nome || '—';
-    const idade = p.data_nascimento ? Math.floor((new Date() - new Date(p.data_nascimento)) / (365.25*24*3600*1000)) + ' anos' : '—';
-    return `<tr><td><strong>🐾 ${p.nome}</strong></td><td>${p.especie||'—'} / ${p.raca||'—'}</td><td>${tutor}</td><td>${idade}</td><td>${p.peso ? p.peso + ' kg' : '—'}</td>
+    const idade = p.data_nascimento ? Math.floor((new Date() - new Date(p.data_nascimento)) / (365.25 * 24 * 3600 * 1000)) + ' anos' : '—';
+    return `<tr><td><strong>🐾 ${safeString(p.nome)}</strong></td><td>${safeString(p.especie || '—')} / ${safeString(p.raca || '—')}</td><td>${safeString(tutor)}</td><td>${idade}</td><td>${p.peso ? p.peso + ' kg' : '—'}</td>
       <td><button class="btn btn-ghost btn-sm" onclick="formPet('${p.id}')">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="apagar('pets','${p.id}')">🗑</button></td></tr>`;
   }).join('');
 }
-function filtrarPets(q) { q=q.toLowerCase(); $('#tabPet tbody').innerHTML = renderPetRows(App.data.pets.filter(p => p.nome.toLowerCase().includes(q))); }
-function filtrarEspecie(e) { $('#tabPet tbody').innerHTML = renderPetRows(e ? App.data.pets.filter(p => p.especie === e) : App.data.pets); }
+const filtrarPets = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabPet tbody').innerHTML = renderPetRows(App.data.pets.filter(p => p.nome.toLowerCase().includes(q)));
+});
+function filtrarEspecie(e) {
+  $('#tabPet tbody').innerHTML = renderPetRows(e ? App.data.pets.filter(p => p.especie === e) : App.data.pets);
+}
 function formPet(id) {
   const p = id ? App.data.pets.find(x => x.id == id) : null;
-  const opts = App.data.clientes.map(c => `<option value="${c.id}" ${p?.cliente_id==c.id?'selected':''}>${c.nome}</option>`).join('');
+  const opts = App.data.clientes.map(c => `<option value="${c.id}" ${p?.cliente_id == c.id ? 'selected' : ''}>${safeString(c.nome)}</option>`).join('');
   openModal(p ? 'Editar Pet' : 'Novo Pet', `
     <div class="field-grid">
-      <div class="field"><label>Nome <span class="req">*</span></label><input id="p_nome" value="${p?.nome||''}"></div>
+      <div class="field"><label>Nome <span class="req">*</span></label><input id="p_nome" maxlength="50" value="${safeString(p?.nome || '')}"></div>
       <div class="field"><label>Tutor <span class="req">*</span></label><select id="p_cli"><option value="">Selecione</option>${opts}</select></div>
       <div class="field"><label>Espécie</label><select id="p_esp">
-        <option ${p?.especie==='Cachorro'?'selected':''}>Cachorro</option>
-        <option ${p?.especie==='Gato'?'selected':''}>Gato</option>
-        <option ${p?.especie==='Ave'?'selected':''}>Ave</option>
-        <option ${p?.especie==='Roedor'?'selected':''}>Roedor</option>
-        <option ${p?.especie==='Outros'?'selected':''}>Outros</option>
+        <option ${p?.especie === 'Cachorro' ? 'selected' : ''}>Cachorro</option>
+        <option ${p?.especie === 'Gato' ? 'selected' : ''}>Gato</option>
+        <option ${p?.especie === 'Ave' ? 'selected' : ''}>Ave</option>
+        <option ${p?.especie === 'Roedor' ? 'selected' : ''}>Roedor</option>
+        <option ${p?.especie === 'Outros' ? 'selected' : ''}>Outros</option>
       </select></div>
-      <div class="field"><label>Raça</label><input id="p_raca" value="${p?.raca||''}"></div>
-      <div class="field"><label>Sexo</label><select id="p_sexo"><option value="M" ${p?.sexo==='M'?'selected':''}>Macho</option><option value="F" ${p?.sexo==='F'?'selected':''}>Fêmea</option></select></div>
-      <div class="field"><label>Data Nasc.</label><input type="date" id="p_nasc" value="${p?.data_nascimento||''}"></div>
-      <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" id="p_peso" value="${p?.peso||''}"></div>
-      <div class="field"><label>Cor</label><input id="p_cor" value="${p?.cor||''}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="p_obs">${p?.observacoes||''}</textarea></div>
+      <div class="field"><label>Raça</label><input id="p_raca" maxlength="50" value="${safeString(p?.raca || '')}"></div>
+      <div class="field"><label>Sexo</label><select id="p_sexo"><option value="M" ${p?.sexo === 'M' ? 'selected' : ''}>Macho</option><option value="F" ${p?.sexo === 'F' ? 'selected' : ''}>Fêmea</option></select></div>
+      <div class="field"><label>Data Nasc.</label><input type="date" id="p_nasc" max="${new Date().toISOString().slice(0, 10)}" value="${p?.data_nascimento || ''}"></div>
+      <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" min="0" max="200" id="p_peso" value="${p?.peso || ''}"></div>
+      <div class="field"><label>Cor</label><input id="p_cor" maxlength="30" value="${safeString(p?.cor || '')}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="p_obs" maxlength="500">${safeString(p?.observacoes || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarPet('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarPet" onclick="salvarPet('${id || ''}')">💾 Salvar</button>`);
 }
 async function salvarPet(id) {
-  const d = { nome: $('#p_nome').value.trim(), cliente_id: $('#p_cli').value, especie: $('#p_esp').value, raca: $('#p_raca').value, sexo: $('#p_sexo').value, data_nascimento: $('#p_nasc').value || null, peso: parseFloat($('#p_peso').value) || null, cor: $('#p_cor').value, observacoes: $('#p_obs').value, loja_id: App.loja.id };
-  if (!d.nome || !d.cliente_id) return toast('Obrigatório', 'Nome e tutor', 'warning');
+  const btn = $('#btnSalvarPet');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('pets').update(d).eq('id', id);
-    else await supabase.from('pets').insert([d]);
+    const d = {
+      nome: $('#p_nome').value.trim().slice(0, 50),
+      cliente_id: $('#p_cli').value,
+      especie: $('#p_esp').value,
+      raca: $('#p_raca').value.slice(0, 50),
+      sexo: $('#p_sexo').value,
+      data_nascimento: $('#p_nasc').value || null,
+      peso: parseFloat($('#p_peso').value) || null,
+      cor: $('#p_cor').value.slice(0, 30),
+      observacoes: $('#p_obs').value.slice(0, 500),
+      loja_id: App.loja.id
+    };
+    if (!d.nome || !d.cliente_id) {
+      toast('Obrigatório', 'Nome e tutor', 'warning');
+      return;
+    }
+    if (id) await sbCall(() => supabase.from('pets').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('pets').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Cadastrado', 'success');
-    closeModal(); await carregarTudo(); renderPage('pets');
+    closeModal();
+    await carregarTudo();
+    renderPage('pets');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ SERVIÇOS ============ */
 Page.servicos = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -789,46 +1081,62 @@ Page.servicos = () => {
 function renderSrvRows(lista) {
   if (!lista.length) return '<tr><td colspan="5" class="empty"><div class="icon">✂️</div>Nenhum serviço</td></tr>';
   return lista.map(s => `<tr>
-    <td><strong>${s.nome}</strong><br><small style="color:var(--text-soft);">${s.descricao||''}</small></td>
-    <td><span class="badge-pill badge-blue">${s.categoria||'Geral'}</span></td>
+    <td><strong>${safeString(s.nome)}</strong><br><small style="color:var(--text-soft);">${safeString(s.descricao || '')}</small></td>
+    <td><span class="badge-pill badge-blue">${safeString(s.categoria || 'Geral')}</span></td>
     <td>${s.duracao_min ? s.duracao_min + ' min' : '—'}</td>
     <td><strong>${fmtMoney(s.preco)}</strong></td>
     <td><button class="btn btn-ghost btn-sm" onclick="formServico('${s.id}')">✏️</button>
     <button class="btn btn-danger btn-sm" onclick="apagar('servicos','${s.id}')">🗑</button></td>
   </tr>`).join('');
 }
-function filtrarSrv(q) { q=q.toLowerCase(); $('#tabSrv tbody').innerHTML = renderSrvRows(App.data.servicos.filter(s => s.nome.toLowerCase().includes(q))); }
+const filtrarSrv = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabSrv tbody').innerHTML = renderSrvRows(App.data.servicos.filter(s => s.nome.toLowerCase().includes(q)));
+});
 function formServico(id) {
   const s = id ? App.data.servicos.find(x => x.id == id) : null;
   openModal(s ? 'Editar Serviço' : 'Novo Serviço', `
     <div class="field-grid">
-      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="s_nome" value="${s?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="s_nome" maxlength="80" value="${safeString(s?.nome || '')}"></div>
       <div class="field"><label>Categoria</label><select id="s_cat">
-        <option ${s?.categoria==='Banho'?'selected':''}>Banho</option>
-        <option ${s?.categoria==='Tosa'?'selected':''}>Tosa</option>
-        <option ${s?.categoria==='Banho e Tosa'?'selected':''}>Banho e Tosa</option>
-        <option ${s?.categoria==='Veterinário'?'selected':''}>Veterinário</option>
-        <option ${s?.categoria==='Hospedagem'?'selected':''}>Hospedagem</option>
-        <option ${s?.categoria==='Creche'?'selected':''}>Creche</option>
-        <option ${s?.categoria==='Outros'?'selected':''}>Outros</option>
+        <option ${s?.categoria === 'Banho' ? 'selected' : ''}>Banho</option>
+        <option ${s?.categoria === 'Tosa' ? 'selected' : ''}>Tosa</option>
+        <option ${s?.categoria === 'Banho e Tosa' ? 'selected' : ''}>Banho e Tosa</option>
+        <option ${s?.categoria === 'Veterinário' ? 'selected' : ''}>Veterinário</option>
+        <option ${s?.categoria === 'Hospedagem' ? 'selected' : ''}>Hospedagem</option>
+        <option ${s?.categoria === 'Creche' ? 'selected' : ''}>Creche</option>
+        <option ${s?.categoria === 'Outros' ? 'selected' : ''}>Outros</option>
       </select></div>
-      <div class="field"><label>Duração (min)</label><input type="number" id="s_dur" value="${s?.duracao_min||''}"></div>
-      <div class="field"><label>Preço (R$) <span class="req">*</span></label><input type="number" step="0.01" id="s_preco" value="${s?.preco||''}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="s_desc">${s?.descricao||''}</textarea></div>
+      <div class="field"><label>Duração (min)</label><input type="number" min="1" max="1440" id="s_dur" value="${s?.duracao_min || ''}"></div>
+      <div class="field"><label>Preço (R$) <span class="req">*</span></label><input type="number" step="0.01" min="0" id="s_preco" value="${s?.preco || ''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="s_desc" maxlength="300">${safeString(s?.descricao || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarServico('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarSrv" onclick="salvarServico('${id || ''}')">💾 Salvar</button>`);
 }
 async function salvarServico(id) {
-  const d = { nome: $('#s_nome').value.trim(), categoria: $('#s_cat').value, duracao_min: parseInt($('#s_dur').value) || null, preco: parseFloat($('#s_preco').value) || 0, descricao: $('#s_desc').value, loja_id: App.loja.id };
-  if (!d.nome) return toast('Obrigatório', 'Nome', 'warning');
+  const btn = $('#btnSalvarSrv');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('servicos').update(d).eq('id', id);
-    else await supabase.from('servicos').insert([d]);
+    const d = {
+      nome: $('#s_nome').value.trim().slice(0, 80),
+      categoria: $('#s_cat').value,
+      duracao_min: parseInt($('#s_dur').value) || null,
+      preco: parseFloat($('#s_preco').value) || 0,
+      descricao: $('#s_desc').value.slice(0, 300),
+      loja_id: App.loja.id
+    };
+    if (!d.nome) { toast('Obrigatório', 'Nome', 'warning'); return; }
+    if (id) await sbCall(() => supabase.from('servicos').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('servicos').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Criado', 'success');
-    closeModal(); await carregarTudo(); renderPage('servicos');
+    closeModal();
+    await carregarTudo();
+    renderPage('servicos');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ OS ============ */
 Page.os = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -844,47 +1152,70 @@ Page.os = () => {
 function renderOSRows(lista) {
   if (!lista.length) return '<tr><td colspan="7" class="empty"><div class="icon">🧾</div>Nenhuma OS</td></tr>';
   return lista.map(o => {
-    const st = { aberta:['badge-blue','Aberta'], em_andamento:['badge-yellow','Em andamento'], concluida:['badge-green','Concluída'], cancelada:['badge-red','Cancelada'] }[o.status] || ['badge-gray', o.status];
-    return `<tr><td><strong>#${(o.numero||o.id).toString().slice(-4)}</strong></td><td>${fmtDate(o.created_at)}</td>
-      <td>${o.pets?.nome||'—'}</td><td>${o.clientes?.nome||'—'}</td>
+    const st = { aberta: ['badge-blue', 'Aberta'], em_andamento: ['badge-yellow', 'Em andamento'], concluida: ['badge-green', 'Concluída'], cancelada: ['badge-red', 'Cancelada'] }[o.status] || ['badge-gray', o.status];
+    return `<tr><td><strong>#${(o.numero || o.id).toString().slice(-4)}</strong></td><td>${fmtDate(o.created_at)}</td>
+      <td>${safeString(o.pets?.nome || '—')}</td><td>${safeString(o.clientes?.nome || '—')}</td>
       <td><span class="badge-pill ${st[0]}">${st[1]}</span></td>
-      <td><strong>${fmtMoney(o.total||0)}</strong></td>
+      <td><strong>${fmtMoney(o.total || 0)}</strong></td>
       <td><button class="btn btn-ghost btn-sm" onclick="formOS('${o.id}')">👁</button>
       <button class="btn btn-danger btn-sm" onclick="apagar('os','${o.id}')">🗑</button></td></tr>`;
   }).join('');
 }
-function filtrarOS(q) { q=q.toLowerCase(); $('#tabOS tbody').innerHTML = renderOSRows(App.data.os.filter(o => (o.pets?.nome||'').toLowerCase().includes(q) || (o.clientes?.nome||'').toLowerCase().includes(q))); }
-function filtrarStatusOS(s) { $('#tabOS tbody').innerHTML = renderOSRows(s ? App.data.os.filter(o => o.status === s) : App.data.os); }
+const filtrarOS = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabOS tbody').innerHTML = renderOSRows(App.data.os.filter(o => (o.pets?.nome || '').toLowerCase().includes(q) || (o.clientes?.nome || '').toLowerCase().includes(q)));
+});
+function filtrarStatusOS(s) {
+  $('#tabOS tbody').innerHTML = renderOSRows(s ? App.data.os.filter(o => o.status === s) : App.data.os);
+}
 function formOS(id) {
   const o = id ? App.data.os.find(x => x.id == id) : null;
-  const petOpts = App.data.pets.map(p => `<option value="${p.id}" ${o?.pet_id==p.id?'selected':''}>${p.nome}</option>`).join('');
+  const petOpts = App.data.pets.map(p => `<option value="${p.id}" ${o?.pet_id == p.id ? 'selected' : ''}>${safeString(p.nome)}</option>`).join('');
   openModal(o ? 'Detalhes da OS' : 'Nova OS', `
     <div class="field-grid">
       <div class="field"><label>Pet <span class="req">*</span></label><select id="o_pet"><option value="">Selecione</option>${petOpts}</select></div>
       <div class="field"><label>Status</label><select id="o_status">
-        <option value="aberta" ${o?.status==='aberta'?'selected':''}>Aberta</option>
-        <option value="em_andamento" ${o?.status==='em_andamento'?'selected':''}>Em andamento</option>
-        <option value="concluida" ${o?.status==='concluida'?'selected':''}>Concluída</option>
-        <option value="cancelada" ${o?.status==='cancelada'?'selected':''}>Cancelada</option>
+        <option value="aberta" ${o?.status === 'aberta' ? 'selected' : ''}>Aberta</option>
+        <option value="em_andamento" ${o?.status === 'em_andamento' ? 'selected' : ''}>Em andamento</option>
+        <option value="concluida" ${o?.status === 'concluida' ? 'selected' : ''}>Concluída</option>
+        <option value="cancelada" ${o?.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
       </select></div>
-      <div class="field"><label>Total (R$)</label><input type="number" step="0.01" id="o_total" value="${o?.total||0}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Serviços executados</label><textarea id="o_serv">${o?.servicos_executados||''}</textarea></div>
-      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="o_obs">${o?.observacoes||''}</textarea></div>
+      <div class="field"><label>Total (R$)</label><input type="number" step="0.01" min="0" id="o_total" value="${o?.total || 0}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Serviços executados</label><textarea id="o_serv" maxlength="500">${safeString(o?.servicos_executados || '')}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="o_obs" maxlength="500">${safeString(o?.observacoes || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarOS('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarOS" onclick="salvarOS('${id || ''}')">💾 Salvar</button>`);
 }
 async function salvarOS(id) {
-  const pet = App.data.pets.find(p => p.id == $('#o_pet').value);
-  const d = { pet_id: $('#o_pet').value, cliente_id: pet?.cliente_id, status: $('#o_status').value, total: parseFloat($('#o_total').value) || 0, servicos_executados: $('#o_serv').value, observacoes: $('#o_obs').value, loja_id: App.loja.id };
-  if (!d.pet_id) return toast('Obrigatório', 'Pet', 'warning');
+  const btn = $('#btnSalvarOS');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('os').update(d).eq('id', id);
-    else { const max = App.data.os.reduce((m,o)=>Math.max(m, parseInt(o.numero||0)), 0); d.numero = max + 1; await supabase.from('os').insert([d]); }
+    const pet = App.data.pets.find(p => p.id == $('#o_pet').value);
+    const d = {
+      pet_id: $('#o_pet').value,
+      cliente_id: pet?.cliente_id,
+      status: $('#o_status').value,
+      total: parseFloat($('#o_total').value) || 0,
+      servicos_executados: $('#o_serv').value.slice(0, 500),
+      observacoes: $('#o_obs').value.slice(0, 500),
+      loja_id: App.loja.id
+    };
+    if (!d.pet_id) { toast('Obrigatório', 'Pet', 'warning'); return; }
+    if (id) await sbCall(() => supabase.from('os').update(d).eq('id', id));
+    else {
+      const max = App.data.os.reduce((m, o) => Math.max(m, parseInt(o.numero || 0)), 0);
+      d.numero = max + 1;
+      await sbCall(() => supabase.from('os').insert([d]));
+    }
     toast('Sucesso', id ? 'Atualizada' : 'Criada', 'success');
-    closeModal(); await carregarTudo(); renderPage('os');
+    closeModal();
+    await carregarTudo();
+    renderPage('os');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ PRODUTOS ============ */
 Page.produtos = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -900,67 +1231,86 @@ Page.produtos = () => {
 function renderProdRows(lista) {
   if (!lista.length) return '<tr><td colspan="6" class="empty"><div class="icon">📦</div>Nenhum produto</td></tr>';
   return lista.map(p => {
-    const baixo = p.estoque_atual <= (p.estoque_minimo||0);
-    return `<tr><td><strong>${p.nome}</strong><br><small style="color:var(--text-soft);">${p.descricao||''}</small></td>
-      <td><span class="badge-pill badge-gray">${p.categoria||'—'}</span></td>
-      <td><span class="badge-pill ${baixo?'badge-red':'badge-green'}">${p.estoque_atual} un</span></td>
+    const baixo = p.estoque_atual <= (p.estoque_minimo || 0);
+    return `<tr><td><strong>${safeString(p.nome)}</strong><br><small style="color:var(--text-soft);">${safeString(p.descricao || '')}</small></td>
+      <td><span class="badge-pill badge-gray">${safeString(p.categoria || '—')}</span></td>
+      <td><span class="badge-pill ${baixo ? 'badge-red' : 'badge-green'}">${p.estoque_atual} un</span></td>
       <td>${fmtMoney(p.preco_custo)}</td><td><strong>${fmtMoney(p.preco_venda)}</strong></td>
       <td><button class="btn btn-ghost btn-sm" onclick="formProduto('${p.id}')">✏️</button>
       <button class="btn btn-danger btn-sm" onclick="apagar('produtos','${p.id}')">🗑</button></td></tr>`;
   }).join('');
 }
-function filtrarProd(q) { q=q.toLowerCase(); $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.nome.toLowerCase().includes(q))); }
+const filtrarProd = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.nome.toLowerCase().includes(q)));
+});
 function filtrarEstoque(f) {
-  if (f === 'baixo') $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo||0)));
-  else if (f === 'ok') $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.estoque_atual > (p.estoque_minimo||0)));
+  if (f === 'baixo') $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo || 0)));
+  else if (f === 'ok') $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos.filter(p => p.estoque_atual > (p.estoque_minimo || 0)));
   else $('#tabProd tbody').innerHTML = renderProdRows(App.data.produtos);
 }
 function formProduto(id) {
   const p = id ? App.data.produtos.find(x => x.id == id) : null;
   openModal(p ? 'Editar Produto' : 'Novo Produto', `
     <div class="field-grid">
-      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="pr_nome" value="${p?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="pr_nome" maxlength="100" value="${safeString(p?.nome || '')}"></div>
       <div class="field"><label>Categoria</label><select id="pr_cat">
-        <option ${p?.categoria==='Ração'?'selected':''}>Ração</option><option ${p?.categoria==='Brinquedo'?'selected':''}>Brinquedo</option>
-        <option ${p?.categoria==='Acessório'?'selected':''}>Acessório</option><option ${p?.categoria==='Medicamento'?'selected':''}>Medicamento</option>
-        <option ${p?.categoria==='Higiene'?'selected':''}>Higiene</option><option ${p?.categoria==='Outros'?'selected':''}>Outros</option>
+        <option ${p?.categoria === 'Ração' ? 'selected' : ''}>Ração</option><option ${p?.categoria === 'Brinquedo' ? 'selected' : ''}>Brinquedo</option>
+        <option ${p?.categoria === 'Acessório' ? 'selected' : ''}>Acessório</option><option ${p?.categoria === 'Medicamento' ? 'selected' : ''}>Medicamento</option>
+        <option ${p?.categoria === 'Higiene' ? 'selected' : ''}>Higiene</option><option ${p?.categoria === 'Outros' ? 'selected' : ''}>Outros</option>
       </select></div>
-      <div class="field"><label>Código barras</label><input id="pr_cod" value="${p?.codigo_barras||''}"></div>
-      <div class="field"><label>Custo (R$)</label><input type="number" step="0.01" id="pr_custo" value="${p?.preco_custo||''}"></div>
-      <div class="field"><label>Venda (R$) <span class="req">*</span></label><input type="number" step="0.01" id="pr_venda" value="${p?.preco_venda||''}"></div>
-      <div class="field"><label>Estoque</label><input type="number" id="pr_est" value="${p?.estoque_atual||0}"></div>
-      <div class="field"><label>Est. Mínimo</label><input type="number" id="pr_min" value="${p?.estoque_minimo||0}"></div>
-      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="pr_desc">${p?.descricao||''}</textarea></div>
+      <div class="field"><label>Código barras</label><input id="pr_cod" maxlength="50" value="${safeString(p?.codigo_barras || '')}"></div>
+      <div class="field"><label>Custo (R$)</label><input type="number" step="0.01" min="0" id="pr_custo" value="${p?.preco_custo || ''}"></div>
+      <div class="field"><label>Venda (R$) <span class="req">*</span></label><input type="number" step="0.01" min="0" id="pr_venda" value="${p?.preco_venda || ''}"></div>
+      <div class="field"><label>Estoque</label><input type="number" min="0" id="pr_est" value="${p?.estoque_atual || 0}"></div>
+      <div class="field"><label>Est. Mínimo</label><input type="number" min="0" id="pr_min" value="${p?.estoque_minimo || 0}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="pr_desc" maxlength="300">${safeString(p?.descricao || '')}</textarea></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarProduto('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarProd" onclick="salvarProduto('${id || ''}')">💾 Salvar</button>`);
 }
 async function salvarProduto(id) {
-  const d = { nome: $('#pr_nome').value.trim(), categoria: $('#pr_cat').value, codigo_barras: $('#pr_cod').value, preco_custo: parseFloat($('#pr_custo').value)||0, preco_venda: parseFloat($('#pr_venda').value)||0, estoque_atual: parseInt($('#pr_est').value)||0, estoque_minimo: parseInt($('#pr_min').value)||0, descricao: $('#pr_desc').value, loja_id: App.loja.id };
-  if (!d.nome) return toast('Obrigatório', 'Nome', 'warning');
+  const btn = $('#btnSalvarProd');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('produtos').update(d).eq('id', id);
-    else await supabase.from('produtos').insert([d]);
+    const d = {
+      nome: $('#pr_nome').value.trim().slice(0, 100),
+      categoria: $('#pr_cat').value,
+      codigo_barras: $('#pr_cod').value.slice(0, 50),
+      preco_custo: parseFloat($('#pr_custo').value) || 0,
+      preco_venda: parseFloat($('#pr_venda').value) || 0,
+      estoque_atual: parseInt($('#pr_est').value) || 0,
+      estoque_minimo: parseInt($('#pr_min').value) || 0,
+      descricao: $('#pr_desc').value.slice(0, 300),
+      loja_id: App.loja.id
+    };
+    if (!d.nome) { toast('Obrigatório', 'Nome', 'warning'); return; }
+    if (id) await sbCall(() => supabase.from('produtos').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('produtos').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Cadastrado', 'success');
-    closeModal(); await carregarTudo(); renderPage('produtos');
+    closeModal();
+    await carregarTudo();
+    renderPage('produtos');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ VENDAS ============ */
 Page.vendas = () => {
-  const totalMes = App.data.vendas.filter(v => v.created_at?.slice(0,7) === new Date().toISOString().slice(0,7)).reduce((s,v)=>s+(v.total||0),0);
+  const totalMes = App.data.vendas.filter(v => v.created_at?.slice(0, 7) === new Date().toISOString().slice(0, 7)).reduce((s, v) => s + (v.total || 0), 0);
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><div class="stat-label">Total no Mês</div><div class="stat-value">${fmtMoney(totalMes)}</div></div></div>
-      <div class="stat-card"><div class="stat-icon blue">🧾</div><div class="stat-info"><div class="stat-label">Vendas no Mês</div><div class="stat-value">${App.data.vendas.filter(v => v.created_at?.slice(0,7) === new Date().toISOString().slice(0,7)).length}</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">🧾</div><div class="stat-info"><div class="stat-label">Vendas no Mês</div><div class="stat-value">${App.data.vendas.filter(v => v.created_at?.slice(0, 7) === new Date().toISOString().slice(0, 7)).length}</div></div></div>
       <div class="stat-card"><div class="stat-icon orange">📦</div><div class="stat-info"><div class="stat-label">Histórico</div><div class="stat-value">${App.data.vendas.length}</div></div></div>
     </div>
     <div class="toolbar"><button class="btn btn-primary" onclick="formVenda()">➕ Nova Venda (PDV)</button></div>
     <div class="card"><div class="card-body nopad"><div class="table-wrap">
       <table><thead><tr><th>Data</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Pagamento</th><th></th></tr></thead>
       <tbody>${App.data.vendas.length === 0 ? '<tr><td colspan="6" class="empty"><div class="icon">💰</div>Nenhuma venda</td></tr>' :
-        App.data.vendas.map(v => `<tr><td>${fmtDateTime(v.created_at)}</td><td>${v.clientes?.nome || '—'}</td>
-          <td><span class="badge-pill badge-blue">${v.qtd_itens||0}</span></td>
+        App.data.vendas.map(v => `<tr><td>${fmtDateTime(v.created_at)}</td><td>${safeString(v.clientes?.nome || '—')}</td>
+          <td><span class="badge-pill badge-blue">${v.qtd_itens || 0}</span></td>
           <td><strong>${fmtMoney(v.total)}</strong></td>
-          <td><span class="badge-pill badge-green">${v.forma_pagamento||'—'}</span></td>
+          <td><span class="badge-pill badge-green">${safeString(v.forma_pagamento || '—')}</span></td>
           <td><button class="btn btn-danger btn-sm" onclick="apagar('vendas','${v.id}')">🗑</button></td></tr>`).join('')}</tbody>
     </table></div></div></div>
   `;
@@ -970,19 +1320,19 @@ let vendaItens = [];
 function formVenda() {
   vendaItens = [];
   openModal('Nova Venda — PDV', `
-    <div class="field"><label>Cliente</label><select id="v_cli"><option value="">Consumidor final</option>${App.data.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}</select></div>
+    <div class="field"><label>Cliente</label><select id="v_cli"><option value="">Consumidor final</option>${App.data.clientes.map(c => `<option value="${c.id}">${safeString(c.nome)}</option>`).join('')}</select></div>
     <div class="field-grid">
-      <div class="field"><label>Produto</label><select id="v_prod">${App.data.produtos.map(p => `<option value="${p.id}" data-preco="${p.preco_venda}">${p.nome} — ${fmtMoney(p.preco_venda)} (${p.estoque_atual})</option>`).join('')}</select></div>
-      <div class="field"><label>Quantidade</label><input type="number" id="v_qtd" value="1" min="1"></div>
+      <div class="field"><label>Produto</label><select id="v_prod">${App.data.produtos.map(p => `<option value="${p.id}" data-preco="${p.preco_venda}">${safeString(p.nome)} — ${fmtMoney(p.preco_venda)} (${p.estoque_atual})</option>`).join('')}</select></div>
+      <div class="field"><label>Quantidade</label><input type="number" id="v_qtd" value="1" min="1" max="100"></div>
     </div>
     <button class="btn btn-ghost" onclick="addVendaItem()" style="margin-bottom:1rem;">➕ Adicionar Item</button>
     <div id="vendaItens" style="margin-bottom:1rem;"></div>
     <div class="field-grid">
-      <div class="field"><label>Desconto (R$)</label><input type="number" step="0.01" id="v_desc" value="0" oninput="calcVenda()"></div>
+      <div class="field"><label>Desconto (R$)</label><input type="number" step="0.01" min="0" id="v_desc" value="0" oninput="calcVenda()"></div>
       <div class="field"><label>Pagamento</label><select id="v_pag"><option>Dinheiro</option><option>PIX</option><option>Cartão Débito</option><option>Cartão Crédito</option></select></div>
     </div>
     <div style="background:#f0f9ff;padding:1rem;border-radius:10px;text-align:right;font-size:1.3rem;font-weight:800;color:#1e40af;">Total: <span id="v_total">R$ 0,00</span></div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarVenda()">💾 Finalizar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarVenda" onclick="salvarVenda()">💾 Finalizar</button>`);
   renderVendaItens();
 }
 function addVendaItem() {
@@ -990,53 +1340,65 @@ function addVendaItem() {
   const qtd = parseInt($('#v_qtd').value) || 1;
   const p = App.data.produtos.find(x => x.id == pid);
   if (!p) return;
+  if (qtd > p.estoque_atual) { toast('Estoque insuficiente', `Apenas ${p.estoque_atual} disponíveis`, 'warning'); return; }
   const ex = vendaItens.find(i => i.produto_id == pid);
-  if (ex) ex.quantidade += qtd; else vendaItens.push({ produto_id: pid, nome: p.nome, preco: p.preco_venda, quantidade: qtd });
+  if (ex) {
+    if (ex.quantidade + qtd > p.estoque_atual) { toast('Estoque', 'Quantidade excede estoque', 'warning'); return; }
+    ex.quantidade += qtd;
+  } else vendaItens.push({ produto_id: pid, nome: p.nome, preco: p.preco_venda, quantidade: qtd });
   renderVendaItens();
 }
 function renderVendaItens() {
   $('#vendaItens').innerHTML = vendaItens.length === 0 ? '' : '<table style="width:100%;font-size:.85rem;"><thead><tr><th>Produto</th><th>Qtd</th><th>Unit.</th><th>Subt.</th><th></th></tr></thead><tbody>' +
-    vendaItens.map((i,idx) => `<tr><td>${i.nome}</td><td>${i.quantidade}</td><td>${fmtMoney(i.preco)}</td><td>${fmtMoney(i.preco*i.quantidade)}</td><td><button class="btn btn-danger btn-sm" onclick="remVendaItem(${idx})">✕</button></td></tr>`).join('') + '</tbody></table>';
+    vendaItens.map((i, idx) => `<tr><td>${safeString(i.nome)}</td><td>${i.quantidade}</td><td>${fmtMoney(i.preco)}</td><td>${fmtMoney(i.preco * i.quantidade)}</td><td><button class="btn btn-danger btn-sm" onclick="remVendaItem(${idx})">✕</button></td></tr>`).join('') + '</tbody></table>';
   calcVenda();
 }
-function remVendaItem(i) { vendaItens.splice(i,1); renderVendaItens(); }
+function remVendaItem(i) { vendaItens.splice(i, 1); renderVendaItens(); }
 function calcVenda() {
-  const sub = vendaItens.reduce((s,i) => s + i.preco * i.quantidade, 0);
+  const sub = vendaItens.reduce((s, i) => s + i.preco * i.quantidade, 0);
   const desc = parseFloat($('#v_desc')?.value || 0);
   const tot = Math.max(0, sub - desc);
   const el = $('#v_total'); if (el) el.textContent = fmtMoney(tot);
 }
 async function salvarVenda() {
-  if (!vendaItens.length) return toast('Itens', 'Adicione pelo menos um item', 'warning');
-  const sub = vendaItens.reduce((s,i) => s + i.preco * i.quantidade, 0);
+  const btn = $('#btnSalvarVenda');
+  btn?.classList.add('loading');
+  if (!vendaItens.length) { toast('Itens', 'Adicione pelo menos um item', 'warning'); btn?.classList.remove('loading'); return; }
+  const sub = vendaItens.reduce((s, i) => s + i.preco * i.quantidade, 0);
   const desc = parseFloat($('#v_desc').value) || 0;
   const total = sub - desc;
   try {
-    const { data: venda, error } = await supabase.from('vendas').insert([{ cliente_id: $('#v_cli').value || null, total, desconto: desc, forma_pagamento: $('#v_pag').value, qtd_itens: vendaItens.length, loja_id: App.loja.id }]).select().single();
+    const { data: venda, error } = await sbCall(() => supabase.from('vendas').insert([{ cliente_id: $('#v_cli').value || null, total, desconto: desc, forma_pagamento: $('#v_pag').value, qtd_itens: vendaItens.length, loja_id: App.loja.id }]).select().single());
     if (error) throw error;
     const itens = vendaItens.map(i => ({ venda_id: venda.id, produto_id: i.produto_id, quantidade: i.quantidade, preco_unit: i.preco, subtotal: i.preco * i.quantidade }));
-    await supabase.from('itens_venda').insert(itens);
+    await sbCall(() => supabase.from('itens_venda').insert(itens));
     for (const i of vendaItens) {
-      await supabase.rpc('decrementar_estoque', { produto_id_in: i.produto_id, qtd: i.quantidade }).catch(() => {
-        const p = App.data.produtos.find(x=>x.id==i.produto_id);
-        if (p) supabase.from('produtos').update({ estoque_atual: Math.max(0, p.estoque_atual - i.quantidade) }).eq('id', p.id);
-      });
+      try {
+        await sbCall(() => supabase.rpc('decrementar_estoque', { produto_id_in: i.produto_id, qtd: i.quantidade }));
+      } catch {
+        const p = App.data.produtos.find(x => x.id == i.produto_id);
+        if (p) await sbCall(() => supabase.from('produtos').update({ estoque_atual: Math.max(0, p.estoque_atual - i.quantidade) }).eq('id', p.id));
+      }
     }
     toast('Venda registrada!', `Total: ${fmtMoney(total)}`, 'success');
-    closeModal(); await carregarTudo(); renderPage('vendas');
+    closeModal();
+    await carregarTudo();
+    renderPage('vendas');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ FINANCEIRO ============ */
 Page.financeiro = () => {
-  const hoje = new Date().toISOString().slice(0,10);
+  const hoje = new Date().toISOString().slice(0, 10);
   const pagar = App.data.financeiro.filter(f => f.tipo === 'despesa' && f.status === 'pendente');
   const receber = App.data.financeiro.filter(f => f.tipo === 'receita' && f.status === 'pendente');
   const vencidas = pagar.filter(f => f.data_vencimento < hoje);
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon green">💵</div><div class="stat-info"><div class="stat-label">A Receber</div><div class="stat-value">${fmtMoney(receber.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${receber.length} conta(s)</div></div></div>
-      <div class="stat-card"><div class="stat-icon orange">💸</div><div class="stat-info"><div class="stat-label">A Pagar</div><div class="stat-value">${fmtMoney(pagar.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${pagar.length} conta(s)</div></div></div>
-      <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><div class="stat-label">Vencidas</div><div class="stat-value">${fmtMoney(vencidas.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change down">${vencidas.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">💵</div><div class="stat-info"><div class="stat-label">A Receber</div><div class="stat-value">${fmtMoney(receber.reduce((s, f) => s + f.valor, 0))}</div><div class="stat-change">${receber.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">💸</div><div class="stat-info"><div class="stat-label">A Pagar</div><div class="stat-value">${fmtMoney(pagar.reduce((s, f) => s + f.valor, 0))}</div><div class="stat-change">${pagar.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><div class="stat-label">Vencidas</div><div class="stat-value">${fmtMoney(vencidas.reduce((s, f) => s + f.valor, 0))}</div><div class="stat-change down">${vencidas.length} conta(s)</div></div></div>
     </div>
     <div class="toolbar">
       <div class="search-input"><input placeholder="Buscar..." oninput="filtrarFin(this.value)"></div>
@@ -1051,55 +1413,73 @@ Page.financeiro = () => {
 function renderFinRows(lista) {
   if (!lista.length) return '<tr><td colspan="7" class="empty"><div class="icon">💳</div>Nenhuma conta</td></tr>';
   return lista.map(f => {
-    const vencida = f.status === 'pendente' && f.data_vencimento < new Date().toISOString().slice(0,10);
-    return `<tr><td><strong>${f.descricao}</strong></td>
-      <td><span class="badge-pill badge-gray">${f.categoria||'—'}</span></td>
-      <td>${fmtDate(f.data_vencimento)} ${vencida?'<span class="badge-pill badge-red">vencida</span>':''}</td>
+    const vencida = f.status === 'pendente' && f.data_vencimento < new Date().toISOString().slice(0, 10);
+    return `<tr><td><strong>${safeString(f.descricao)}</strong></td>
+      <td><span class="badge-pill badge-gray">${safeString(f.categoria || '—')}</span></td>
+      <td>${fmtDate(f.data_vencimento)} ${vencida ? '<span class="badge-pill badge-red">vencida</span>' : ''}</td>
       <td><strong>${fmtMoney(f.valor)}</strong></td>
-      <td><span class="badge-pill ${f.tipo==='receita'?'badge-green':'badge-red'}">${f.tipo==='receita'?'Receita':'Despesa'}</span></td>
-      <td><span class="badge-pill ${f.status==='pago'?'badge-green':'badge-yellow'}">${f.status}</span></td>
-      <td>${f.status==='pendente'?`<button class="btn btn-success btn-sm" onclick="pagarFin('${f.id}')">✓</button>`:''}
+      <td><span class="badge-pill ${f.tipo === 'receita' ? 'badge-green' : 'badge-red'}">${f.tipo === 'receita' ? 'Receita' : 'Despesa'}</span></td>
+      <td><span class="badge-pill ${f.status === 'pago' ? 'badge-green' : 'badge-yellow'}">${f.status}</span></td>
+      <td>${f.status === 'pendente' ? `<button class="btn btn-success btn-sm" onclick="pagarFin('${f.id}')">✓</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="formFinanceiro('${f.id}')">✏️</button>
         <button class="btn btn-danger btn-sm" onclick="apagar('financeiro','${f.id}')">🗑</button></td></tr>`;
   }).join('');
 }
-function filtrarFin(q) { q=q.toLowerCase(); $('#tabFin tbody').innerHTML = renderFinRows(App.data.financeiro.filter(f => f.descricao.toLowerCase().includes(q))); }
+const filtrarFin = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabFin tbody').innerHTML = renderFinRows(App.data.financeiro.filter(f => f.descricao.toLowerCase().includes(q)));
+});
 function filtrarTipoFin(t) { $('#tabFin tbody').innerHTML = renderFinRows(t ? App.data.financeiro.filter(f => f.tipo === t) : App.data.financeiro); }
 function formFinanceiro(id) {
   const f = id ? App.data.financeiro.find(x => x.id == id) : null;
   openModal(f ? 'Editar Conta' : 'Nova Conta', `
     <div class="field-grid">
-      <div class="field" style="grid-column:1/-1;"><label>Descrição <span class="req">*</span></label><input id="f_desc" value="${f?.descricao||''}"></div>
-      <div class="field"><label>Tipo</label><select id="f_tipo"><option value="receita" ${f?.tipo==='receita'?'selected':''}>Receita</option><option value="despesa" ${f?.tipo==='despesa'?'selected':''}>Despesa</option></select></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição <span class="req">*</span></label><input id="f_desc" maxlength="100" value="${safeString(f?.descricao || '')}"></div>
+      <div class="field"><label>Tipo</label><select id="f_tipo"><option value="receita" ${f?.tipo === 'receita' ? 'selected' : ''}>Receita</option><option value="despesa" ${f?.tipo === 'despesa' ? 'selected' : ''}>Despesa</option></select></div>
       <div class="field"><label>Categoria</label><select id="f_cat">
         <option>Serviços</option><option>Vendas</option><option>Aluguel</option><option>Salários</option><option>Fornecedores</option><option>Impostos</option><option>Marketing</option><option>Outros</option>
       </select></div>
-      <div class="field"><label>Valor (R$) <span class="req">*</span></label><input type="number" step="0.01" id="f_valor" value="${f?.valor||''}"></div>
-      <div class="field"><label>Vencimento</label><input type="date" id="f_venc" value="${f?.data_vencimento||''}"></div>
-      <div class="field"><label>Status</label><select id="f_status"><option value="pendente" ${f?.status==='pendente'?'selected':''}>Pendente</option><option value="pago" ${f?.status==='pago'?'selected':''}>Pago</option></select></div>
+      <div class="field"><label>Valor (R$) <span class="req">*</span></label><input type="number" step="0.01" min="0" id="f_valor" value="${f?.valor || ''}"></div>
+      <div class="field"><label>Vencimento</label><input type="date" id="f_venc" value="${f?.data_vencimento || ''}"></div>
+      <div class="field"><label>Status</label><select id="f_status"><option value="pendente" ${f?.status === 'pendente' ? 'selected' : ''}>Pendente</option><option value="pago" ${f?.status === 'pago' ? 'selected' : ''}>Pago</option></select></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarFinanceiro('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarFin" onclick="salvarFinanceiro('${id || ''}')">💾 Salvar</button>`);
   if (f) $('#f_cat').value = f.categoria;
 }
 async function salvarFinanceiro(id) {
-  const d = { descricao: $('#f_desc').value.trim(), tipo: $('#f_tipo').value, categoria: $('#f_cat').value, valor: parseFloat($('#f_valor').value)||0, data_vencimento: $('#f_venc').value, status: $('#f_status').value, loja_id: App.loja.id };
-  if (!d.descricao || !d.valor) return toast('Obrigatório', 'Descrição e valor', 'warning');
-  if (d.status === 'pago' && !d.data_pagamento) d.data_pagamento = new Date().toISOString().slice(0,10);
+  const btn = $('#btnSalvarFin');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('financeiro').update(d).eq('id', id);
-    else await supabase.from('financeiro').insert([d]);
+    const d = {
+      descricao: $('#f_desc').value.trim().slice(0, 100),
+      tipo: $('#f_tipo').value,
+      categoria: $('#f_cat').value,
+      valor: parseFloat($('#f_valor').value) || 0,
+      data_vencimento: $('#f_venc').value,
+      status: $('#f_status').value,
+      loja_id: App.loja.id
+    };
+    if (!d.descricao || !d.valor) { toast('Obrigatório', 'Descrição e valor', 'warning'); return; }
+    if (d.status === 'pago' && !d.data_pagamento) d.data_pagamento = new Date().toISOString().slice(0, 10);
+    if (id) await sbCall(() => supabase.from('financeiro').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('financeiro').insert([d]));
     toast('Sucesso', id ? 'Atualizada' : 'Cadastrada', 'success');
-    closeModal(); await carregarTudo(); renderPage('financeiro');
+    closeModal();
+    await carregarTudo();
+    renderPage('financeiro');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 async function pagarFin(id) {
   try {
-    await supabase.from('financeiro').update({ status: 'pago', data_pagamento: new Date().toISOString().slice(0,10) }).eq('id', id);
+    await sbCall(() => supabase.from('financeiro').update({ status: 'pago', data_pagamento: new Date().toISOString().slice(0, 10) }).eq('id', id));
     toast('Pago!', 'Conta quitada', 'success');
-    await carregarTudo(); renderPage('financeiro');
+    await carregarTudo();
+    renderPage('financeiro');
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
+/* ============ FUNCIONÁRIOS ============ */
 Page.funcionarios = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -1113,70 +1493,88 @@ Page.funcionarios = () => {
 };
 function renderFunRows(lista) {
   if (!lista.length) return '<tr><td colspan="6" class="empty"><div class="icon">👨‍💼</div>Nenhum funcionário</td></tr>';
-  return lista.map(f => `<tr><td><strong>${f.nome}</strong></td>
-    <td><span class="badge-pill badge-blue">${f.cargo||'—'}</span></td>
-    <td>${f.telefone||'—'}</td><td>${fmtMoney(f.salario)}</td>
-    <td><span class="badge-pill ${f.ativo!==false?'badge-green':'badge-red'}">${f.ativo!==false?'Ativo':'Inativo'}</span></td>
+  return lista.map(f => `<tr><td><strong>${safeString(f.nome)}</strong></td>
+    <td><span class="badge-pill badge-blue">${safeString(f.cargo || '—')}</span></td>
+    <td>${safeString(f.telefone || '—')}</td><td>${fmtMoney(f.salario)}</td>
+    <td><span class="badge-pill ${f.ativo !== false ? 'badge-green' : 'badge-red'}">${f.ativo !== false ? 'Ativo' : 'Inativo'}</span></td>
     <td><button class="btn btn-ghost btn-sm" onclick="formFuncionario('${f.id}')">✏️</button>
     <button class="btn btn-danger btn-sm" onclick="apagar('funcionarios','${f.id}')">🗑</button></td></tr>`).join('');
 }
-function filtrarFun(q) { q=q.toLowerCase(); $('#tabFun tbody').innerHTML = renderFunRows(App.data.funcionarios.filter(f => f.nome.toLowerCase().includes(q))); }
+const filtrarFun = debounce((q) => {
+  q = q.toLowerCase();
+  $('#tabFun tbody').innerHTML = renderFunRows(App.data.funcionarios.filter(f => f.nome.toLowerCase().includes(q)));
+});
 function formFuncionario(id) {
   const f = id ? App.data.funcionarios.find(x => x.id == id) : null;
   openModal(f ? 'Editar Funcionário' : 'Novo Funcionário', `
     <div class="field-grid">
-      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="fu_nome" value="${f?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="fu_nome" maxlength="100" value="${safeString(f?.nome || '')}"></div>
       <div class="field"><label>Cargo</label><select id="fu_cargo">
-        <option ${f?.cargo==='Banhista'?'selected':''}>Banhista</option><option ${f?.cargo==='Tosador'?'selected':''}>Tosador</option>
-        <option ${f?.cargo==='Veterinário'?'selected':''}>Veterinário</option><option ${f?.cargo==='Atendente'?'selected':''}>Atendente</option>
-        <option ${f?.cargo==='Gerente'?'selected':''}>Gerente</option><option ${f?.cargo==='Recepcionista'?'selected':''}>Recepcionista</option>
+        <option ${f?.cargo === 'Banhista' ? 'selected' : ''}>Banhista</option><option ${f?.cargo === 'Tosador' ? 'selected' : ''}>Tosador</option>
+        <option ${f?.cargo === 'Veterinário' ? 'selected' : ''}>Veterinário</option><option ${f?.cargo === 'Atendente' ? 'selected' : ''}>Atendente</option>
+        <option ${f?.cargo === 'Gerente' ? 'selected' : ''}>Gerente</option><option ${f?.cargo === 'Recepcionista' ? 'selected' : ''}>Recepcionista</option>
       </select></div>
-      <div class="field"><label>Salário (R$)</label><input type="number" step="0.01" id="fu_sal" value="${f?.salario||''}"></div>
-      <div class="field"><label>Telefone</label><input id="fu_tel" value="${f?.telefone||''}"></div>
-      <div class="field"><label>E-mail</label><input id="fu_email" value="${f?.email||''}"></div>
-      <div class="field"><label>Admissão</label><input type="date" id="fu_adm" value="${f?.data_admissao||''}"></div>
-      <div class="field"><label>Status</label><select id="fu_ativo"><option value="true" ${f?.ativo!==false?'selected':''}>Ativo</option><option value="false" ${f?.ativo===false?'selected':''}>Inativo</option></select></div>
+      <div class="field"><label>Salário (R$)</label><input type="number" step="0.01" min="0" id="fu_sal" value="${f?.salario || ''}"></div>
+      <div class="field"><label>Telefone</label><input id="fu_tel" maxlength="15" value="${safeString(f?.telefone || '')}"></div>
+      <div class="field"><label>E-mail</label><input id="fu_email" type="email" maxlength="100" value="${safeString(f?.email || '')}"></div>
+      <div class="field"><label>Admissão</label><input type="date" id="fu_adm" value="${f?.data_admissao || ''}"></div>
+      <div class="field"><label>Status</label><select id="fu_ativo"><option value="true" ${f?.ativo !== false ? 'selected' : ''}>Ativo</option><option value="false" ${f?.ativo === false ? 'selected' : ''}>Inativo</option></select></div>
     </div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarFuncionario('${id||''}')">💾 Salvar</button>`);
+  `, `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="btnSalvarFun" onclick="salvarFuncionario('${id || ''}')">💾 Salvar</button>`);
   if ($('#fu_tel')) mask($('#fu_tel'), masks.tel);
 }
 async function salvarFuncionario(id) {
-  const d = { nome: $('#fu_nome').value.trim(), cargo: $('#fu_cargo').value, salario: parseFloat($('#fu_sal').value)||0, telefone: $('#fu_tel').value, email: $('#fu_email').value, data_admissao: $('#fu_adm').value || null, ativo: $('#fu_ativo').value === 'true', loja_id: App.loja.id };
-  if (!d.nome) return toast('Obrigatório', 'Nome', 'warning');
+  const btn = $('#btnSalvarFun');
+  btn?.classList.add('loading');
   try {
-    if (id) await supabase.from('funcionarios').update(d).eq('id', id);
-    else await supabase.from('funcionarios').insert([d]);
+    const d = {
+      nome: $('#fu_nome').value.trim().slice(0, 100),
+      cargo: $('#fu_cargo').value,
+      salario: parseFloat($('#fu_sal').value) || 0,
+      telefone: $('#fu_tel').value,
+      email: $('#fu_email').value.trim().slice(0, 100),
+      data_admissao: $('#fu_adm').value || null,
+      ativo: $('#fu_ativo').value === 'true',
+      loja_id: App.loja.id
+    };
+    if (!d.nome) { toast('Obrigatório', 'Nome', 'warning'); return; }
+    if (id) await sbCall(() => supabase.from('funcionarios').update(d).eq('id', id));
+    else await sbCall(() => supabase.from('funcionarios').insert([d]));
     toast('Sucesso', id ? 'Atualizado' : 'Cadastrado', 'success');
-    closeModal(); await carregarTudo(); renderPage('funcionarios');
+    closeModal();
+    await carregarTudo();
+    renderPage('funcionarios');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
+/* ============ RELATÓRIOS ============ */
 Page.relatorios = () => {
-  const mesAtual = new Date().toISOString().slice(0,7);
-  const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0,7) === mesAtual);
-  const topClientes = App.data.vendas.filter(v=>v.cliente_id).reduce((acc,v) => { acc[v.cliente_id] = (acc[v.cliente_id]||0) + v.total; return acc; }, {});
-  const topServicos = App.data.agendamentos.reduce((acc,a) => { acc[a.servicos?.nome||'—'] = (acc[a.servicos?.nome||'—']||0) + 1; return acc; }, {});
+  const mesAtual = new Date().toISOString().slice(0, 7);
+  const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0, 7) === mesAtual);
+  const topClientes = App.data.vendas.filter(v => v.cliente_id).reduce((acc, v) => { acc[v.cliente_id] = (acc[v.cliente_id] || 0) + v.total; return acc; }, {});
+  const topServicos = App.data.agendamentos.reduce((acc, a) => { acc[a.servicos?.nome || '—'] = (acc[a.servicos?.nome || '—'] || 0) + 1; return acc; }, {});
 
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><div class="stat-label">Ticket Médio</div><div class="stat-value">${fmtMoney(vendasMes.reduce((s,v)=>s+v.total,0)/(vendasMes.length||1))}</div></div></div>
-      <div class="stat-card"><div class="stat-icon blue">📊</div><div class="stat-info"><div class="stat-label">Taxa Conclusão</div><div class="stat-value">${App.data.agendamentos.length ? Math.round(App.data.agendamentos.filter(a=>a.status==='concluido').length/App.data.agendamentos.length*100) : 0}%</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><div class="stat-label">Ticket Médio</div><div class="stat-value">${fmtMoney(vendasMes.reduce((s, v) => s + v.total, 0) / (vendasMes.length || 1))}</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">📊</div><div class="stat-info"><div class="stat-label">Taxa Conclusão</div><div class="stat-value">${App.data.agendamentos.length ? Math.round(App.data.agendamentos.filter(a => a.status === 'concluido').length / App.data.agendamentos.length * 100) : 0}%</div></div></div>
     </div>
     <div class="dashboard-grid">
       <div class="card">
         <div class="card-header"><h3>🏆 Top Clientes</h3></div>
         <div class="card-body nopad"><table><tbody>
-          ${Object.entries(topClientes).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([cid,valor]) => {
-            const c = App.data.clientes.find(x=>x.id==cid);
-            return `<tr><td><strong>${c?.nome||'—'}</strong></td><td style="text-align:right;"><strong>${fmtMoney(valor)}</strong></td></tr>`;
+          ${Object.entries(topClientes).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cid, valor]) => {
+            const c = App.data.clientes.find(x => x.id == cid);
+            return `<tr><td><strong>${safeString(c?.nome || '—')}</strong></td><td style="text-align:right;"><strong>${fmtMoney(valor)}</strong></td></tr>`;
           }).join('') || '<tr><td class="empty">Sem dados</td></tr>'}
         </tbody></table></div>
       </div>
       <div class="card">
         <div class="card-header"><h3>✂️ Serviços mais agendados</h3></div>
         <div class="card-body nopad"><table><tbody>
-          ${Object.entries(topServicos).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([nome,qtd]) =>
-            `<tr><td><strong>${nome}</strong></td><td style="text-align:right;"><span class="badge-pill badge-blue">${qtd}</span></td></tr>`
+          ${Object.entries(topServicos).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([nome, qtd]) =>
+            `<tr><td><strong>${safeString(nome)}</strong></td><td style="text-align:right;"><span class="badge-pill badge-blue">${qtd}</span></td></tr>`
           ).join('') || '<tr><td class="empty">Sem dados</td></tr>'}
         </tbody></table></div>
       </div>
@@ -1194,14 +1592,18 @@ Page.relatorios = () => {
 };
 function exportCSV(nome) {
   const data = App.data[nome]; if (!data || !data.length) return toast('Vazio', 'Sem dados', 'warning');
-  const headers = Object.keys(data[0]).filter(k => !k.includes('.'));
-  const csv = [headers.join(';')].concat(data.map(r => headers.map(h => JSON.stringify(r[h]??'')).join(';'))).join('\n');
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `${nome}_${Date.now()}.csv`; a.click();
-  toast('Exportado', `${nome}.csv`, 'success');
+  try {
+    const headers = Object.keys(data[0]).filter(k => !k.includes('.'));
+    const csv = [headers.join(';')].concat(data.map(r => headers.map(h => JSON.stringify(r[h] ?? '')).join(';'))).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${nome}_${Date.now()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    toast('Exportado', `${nome}.csv`, 'success');
+  } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
+/* ============ CONFIG ============ */
 Page.config = () => {
   const l = App.loja;
   $('#pageContent').innerHTML = `
@@ -1211,28 +1613,28 @@ Page.config = () => {
         <div class="field" style="background:#f0f9ff;padding:1rem;border-radius:10px;margin-bottom:1.2rem;">
           <label style="color:#1e40af;font-weight:800;margin-bottom:.5rem;">🔑 Código de Convite para Clientes</label>
           <div style="display:flex;gap:.5rem;align-items:center;">
-            <input id="cf_codigo" value="${l?.codigo_convite||''}" readonly style="flex:1;background:white;font-family:monospace;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;">
+            <input id="cf_codigo" value="${safeString(l?.codigo_convite || '')}" readonly style="flex:1;background:white;font-family:monospace;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;">
             <button class="btn btn-ghost" onclick="gerarNovoCodigo()">🔄</button>
             <button class="btn btn-ghost" onclick="copiarCodigo()">📋</button>
           </div>
           <small style="color:var(--text-soft);margin-top:.5rem;display:block;">Compartilhe este código com seus clientes para que se cadastrem no app.</small>
         </div>
         <div class="field-grid">
-          <div class="field"><label>Nome <span class="req">*</span></label><input id="cf_nome" value="${l?.loja_nome||''}"></div>
-          <div class="field"><label>CNPJ</label><input id="cf_cnpj" value="${l?.loja_cnpj||''}"></div>
-          <div class="field"><label>Telefone</label><input id="cf_tel" value="${l?.loja_telefone||''}"></div>
-          <div class="field"><label>WhatsApp</label><input id="cf_wpp" value="${l?.loja_whatsapp||''}"></div>
-          <div class="field" style="grid-column:1/-1;"><label>E-mail</label><input id="cf_email" value="${l?.loja_email||''}"></div>
-          <div class="field"><label>CEP</label><input id="cf_cep" value="${l?.cep||''}"></div>
-          <div class="field"><label>Número</label><input id="cf_num" value="${l?.numero||''}"></div>
-          <div class="field" style="grid-column:1/-1;"><label>Rua</label><input id="cf_rua" value="${l?.rua||''}"></div>
-          <div class="field"><label>Bairro</label><input id="cf_bairro" value="${l?.bairro||''}"></div>
-          <div class="field"><label>Cidade</label><input id="cf_cidade" value="${l?.cidade||''}"></div>
-          <div class="field"><label>Estado</label><input id="cf_estado" value="${l?.estado||''}"></div>
-          <div class="field"><label>Horário</label><input id="cf_hor" value="${l?.horario_funcionamento||''}"></div>
-          <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="cf_desc">${l?.descricao||''}</textarea></div>
+          <div class="field"><label>Nome <span class="req">*</span></label><input id="cf_nome" maxlength="100" value="${safeString(l?.loja_nome || '')}"></div>
+          <div class="field"><label>CNPJ</label><input id="cf_cnpj" value="${safeString(l?.loja_cnpj || '')}"></div>
+          <div class="field"><label>Telefone</label><input id="cf_tel" value="${safeString(l?.loja_telefone || '')}"></div>
+          <div class="field"><label>WhatsApp</label><input id="cf_wpp" value="${safeString(l?.loja_whatsapp || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>E-mail</label><input id="cf_email" type="email" value="${safeString(l?.loja_email || '')}"></div>
+          <div class="field"><label>CEP</label><input id="cf_cep" value="${safeString(l?.cep || '')}"></div>
+          <div class="field"><label>Número</label><input id="cf_num" maxlength="10" value="${safeString(l?.numero || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Rua</label><input id="cf_rua" maxlength="200" value="${safeString(l?.rua || '')}"></div>
+          <div class="field"><label>Bairro</label><input id="cf_bairro" maxlength="80" value="${safeString(l?.bairro || '')}"></div>
+          <div class="field"><label>Cidade</label><input id="cf_cidade" maxlength="80" value="${safeString(l?.cidade || '')}"></div>
+          <div class="field"><label>Estado</label><input id="cf_estado" maxlength="2" value="${safeString(l?.estado || '')}"></div>
+          <div class="field"><label>Horário</label><input id="cf_hor" maxlength="80" value="${safeString(l?.horario_funcionamento || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="cf_desc" maxlength="500">${safeString(l?.descricao || '')}</textarea></div>
         </div>
-        <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar Alterações</button>
+        <button class="btn btn-primary" id="btnSalvarConfig" onclick="salvarConfig()">💾 Salvar Alterações</button>
       </div>
     </div>
   `;
@@ -1242,25 +1644,46 @@ Page.config = () => {
   if ($('#cf_cep')) mask($('#cf_cep'), masks.cep);
 };
 async function salvarConfig() {
+  const btn = $('#btnSalvarConfig');
+  btn?.classList.add('loading');
   try {
-    const d = { loja_nome: $('#cf_nome').value, loja_cnpj: $('#cf_cnpj').value, loja_telefone: $('#cf_tel').value, loja_whatsapp: $('#cf_wpp').value, loja_email: $('#cf_email').value, cep: $('#cf_cep').value, numero: $('#cf_num').value, rua: $('#cf_rua').value, bairro: $('#cf_bairro').value, cidade: $('#cf_cidade').value, estado: $('#cf_estado').value, horario_funcionamento: $('#cf_hor').value, descricao: $('#cf_desc').value };
-    await supabase.from('petshops').update(d).eq('id', App.loja.id);
+    const d = {
+      loja_nome: $('#cf_nome').value.slice(0, 100),
+      loja_cnpj: $('#cf_cnpj').value,
+      loja_telefone: $('#cf_tel').value,
+      loja_whatsapp: $('#cf_wpp').value,
+      loja_email: $('#cf_email').value,
+      cep: $('#cf_cep').value,
+      numero: $('#cf_num').value.slice(0, 10),
+      rua: $('#cf_rua').value.slice(0, 200),
+      bairro: $('#cf_bairro').value.slice(0, 80),
+      cidade: $('#cf_cidade').value.slice(0, 80),
+      estado: $('#cf_estado').value.toUpperCase().slice(0, 2),
+      horario_funcionamento: $('#cf_hor').value.slice(0, 80),
+      descricao: $('#cf_desc').value.slice(0, 500)
+    };
+    await sbCall(() => supabase.from('petshops').update(d).eq('id', App.loja.id));
     App.loja = { ...App.loja, ...d };
     toast('Salvo!', 'Dados atualizados', 'success');
   } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 async function gerarNovoCodigo() {
   const novo = 'PET' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  await supabase.from('petshops').update({ codigo_convite: novo }).eq('id', App.loja.id);
-  App.loja.codigo_convite = novo;
-  $('#cf_codigo').value = novo;
-  toast('Gerado', novo, 'success');
+  try {
+    await sbCall(() => supabase.from('petshops').update({ codigo_convite: novo }).eq('id', App.loja.id));
+    App.loja.codigo_convite = novo;
+    $('#cf_codigo').value = novo;
+    toast('Gerado', novo, 'success');
+  } catch (e) { toast('Erro', e.message, 'error'); }
 }
 function copiarCodigo() {
-  navigator.clipboard.writeText($('#cf_codigo').value);
-  toast('Copiado!', 'Código na área de transferência', 'success');
+  const val = $('#cf_codigo').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => toast('Copiado!', 'Código na área de transferência', 'success'));
 }
 
+/* ============ CHAT ============ */
 let conversaAtual = null;
 let channelChatAdmin = null;
 
@@ -1278,7 +1701,7 @@ Page.chat = () => {
         </div>
         <div class="chat-messages" id="chatMessages"><div style="text-align:center;color:var(--text-soft);margin:auto;">💬 Selecione uma conversa</div></div>
         <div class="chat-input">
-          <input type="text" id="chatInput" placeholder="Digite sua mensagem..." disabled onkeypress="if(event.key==='Enter')enviarMsgAdmin()">
+          <input type="text" id="chatInput" placeholder="Digite sua mensagem..." maxlength="1000" disabled onkeypress="if(event.key==='Enter')enviarMsgAdmin()">
           <button class="btn btn-primary" onclick="enviarMsgAdmin()" id="btnEnviarMsg" disabled>Enviar</button>
         </div>
       </div>
@@ -1288,22 +1711,22 @@ Page.chat = () => {
 };
 
 async function carregarConversas() {
-  const { data: conversas } = await supabase.from('conversas').select('*, clientes(nome, telefone, email)').eq('loja_id', App.loja.id).order('ultima_atualizacao', { ascending: false });
+  const { data: conversas } = await sbCall(() => supabase.from('conversas').select('*, clientes(nome, telefone, email)').eq('loja_id', App.loja.id).order('ultima_atualizacao', { ascending: false }));
   const items = $('#chatListItems');
   if (!conversas || !conversas.length) {
     items.innerHTML = '<div style="padding:2rem 1rem;text-align:center;color:var(--text-soft);">Nenhuma conversa.<br><small>Quando um cliente enviar mensagem, aparecerá aqui.</small></div>';
     return;
   }
   items.innerHTML = conversas.map(c => `
-    <div class="chat-list-item ${conversaAtual==c.id?'active':''}" onclick="abrirConversa(${c.id}, '${(c.clientes?.nome || 'Cliente').replace(/'/g, "\\'")}', '${c.clientes?.email || ''}')" data-conv="${c.id}">
-      <h4>👤 ${c.clientes?.nome || 'Cliente'}</h4>
-      <p>${c.ultima_mensagem || 'Início da conversa'}</p>
-      <div class="meta"><span>${c.ultima_atualizacao ? new Date(c.ultima_atualizacao).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''}</span>
+    <div class="chat-list-item ${conversaAtual == c.id ? 'active' : ''}" onclick="abrirConversa(${c.id}, '${(c.clientes?.nome || 'Cliente').replace(/'/g, "\\'")}', '${c.clientes?.email || ''}')" data-conv="${c.id}">
+      <h4>👤 ${safeString(c.clientes?.nome || 'Cliente')}</h4>
+      <p>${safeString(c.ultima_mensagem || 'Início da conversa')}</p>
+      <div class="meta"><span>${c.ultima_atualizacao ? new Date(c.ultima_atualizacao).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''}</span>
       ${c.nao_lidas_loja > 0 ? `<span class="unread">${c.nao_lidas_loja}</span>` : ''}</div>
     </div>
   `).join('');
 
-  const totalNaoLidas = conversas.reduce((s,c) => s + (c.nao_lidas_loja || 0), 0);
+  const totalNaoLidas = conversas.reduce((s, c) => s + (c.nao_lidas_loja || 0), 0);
   const badge = $('#badgeChatAdmin');
   if (badge) { badge.textContent = totalNaoLidas; badge.style.display = totalNaoLidas > 0 ? 'inline-block' : 'none'; }
 }
@@ -1318,21 +1741,21 @@ async function abrirConversa(convId, nome, email) {
   $$('.chat-list-item').forEach(el => el.classList.remove('active'));
   document.querySelector(`.chat-list-item[data-conv="${convId}"]`)?.classList.add('active');
 
-  const { data } = await supabase.from('mensagens').select('*').eq('conversa_id', convId).order('created_at', { ascending: true });
+  const { data } = await sbCall(() => supabase.from('mensagens').select('*').eq('conversa_id', convId).order('created_at', { ascending: true }));
   const el = $('#chatMessages');
   if (!data || !data.length) el.innerHTML = '<div style="text-align:center;color:var(--text-soft);margin:auto;">Nenhuma mensagem</div>';
   else { el.innerHTML = data.map(renderMsgAdmin).join(''); el.scrollTop = el.scrollHeight; }
 
-  await supabase.from('mensagens').update({ lido_loja: true }).eq('conversa_id', convId).eq('remetente_tipo', 'cliente').eq('lido_loja', false);
-  await supabase.from('conversas').update({ nao_lidas_loja: 0 }).eq('id', convId);
+  await sbCall(() => supabase.from('mensagens').update({ lido_loja: true }).eq('conversa_id', convId).eq('remetente_tipo', 'cliente').eq('lido_loja', false));
+  await sbCall(() => supabase.from('conversas').update({ nao_lidas_loja: 0 }).eq('id', convId));
   carregarConversas();
 }
 
 function renderMsgAdmin(m) {
   const tipo = m.remetente_tipo === 'cliente' ? 'cliente' : 'loja';
   const autor = m.remetente_tipo === 'cliente' ? 'Cliente' : (m.remetente_nome || 'Equipe');
-  const hora = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-  return `<div class="chat-msg ${tipo}"><div class="autor">${autor}</div>${m.texto.replace(/\n/g, '<br>')}<div class="hora">${hora}</div></div>`;
+  const hora = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return `<div class="chat-msg ${tipo}"><div class="autor">${safeString(autor)}</div>${safeString(m.texto).replace(/\n/g, '<br>')}<div class="hora">${hora}</div></div>`;
 }
 
 async function enviarMsgAdmin() {
@@ -1340,8 +1763,12 @@ async function enviarMsgAdmin() {
   const texto = input.value.trim();
   if (!texto || !conversaAtual) return;
   input.value = '';
-  const { error } = await supabase.from('mensagens').insert([{ conversa_id: conversaAtual, loja_id: App.loja.id, remetente_tipo: 'loja', remetente_nome: App.user.user_metadata?.nome || 'Equipe', texto, lido_loja: true }]);
-  if (error) toast('Erro', error.message, 'error');
+  const btn = $('#btnEnviarMsg');
+  btn?.classList.add('loading');
+  try {
+    await sbCall(() => supabase.from('mensagens').insert([{ conversa_id: conversaAtual, loja_id: App.loja.id, remetente_tipo: 'loja', remetente_nome: App.user.user_metadata?.nome || 'Equipe', texto: texto.slice(0, 1000), lido_loja: true }]));
+  } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
 }
 
 function iniciarRealtimeChatAdmin() {
@@ -1352,13 +1779,13 @@ function iniciarRealtimeChatAdmin() {
       if (App.currentPage === 'chat' && conversaAtual && m.conversa_id == conversaAtual) {
         $('#chatMessages').innerHTML += renderMsgAdmin(m);
         $('#chatMessages').scrollTop = $('#chatMessages').scrollHeight;
-        if (m.remetente_tipo === 'cliente') await supabase.from('mensagens').update({ lido_loja: true }).eq('id', m.id);
+        if (m.remetente_tipo === 'cliente') await sbCall(() => supabase.from('mensagens').update({ lido_loja: true }).eq('id', m.id));
       } else {
         if (App.currentPage === 'chat') carregarConversas();
         if (m.remetente_tipo === 'cliente') {
           toast('💬 Nova mensagem', m.texto.slice(0, 50), 'info');
           const badge = $('#badgeChatAdmin');
-          if (badge) { badge.style.display = 'inline-block'; badge.textContent = parseInt(badge.textContent||0) + 1; }
+          if (badge) { badge.style.display = 'inline-block'; badge.textContent = parseInt(badge.textContent || 0) + 1; }
         }
       }
     })
@@ -1368,16 +1795,37 @@ function iniciarRealtimeChatAdmin() {
     .subscribe();
 }
 
+/* ============ EXCLUIR COM CONFIRMAÇÃO ============ */
 async function apagar(tabela, id) {
-  if (!confirm('Excluir este registro?')) return;
+  const nomes = {
+    agendamentos: 'agendamento', clientes: 'cliente', pets: 'pet',
+    servicos: 'serviço', os: 'OS', produtos: 'produto',
+    vendas: 'venda', financeiro: 'conta', funcionarios: 'funcionário'
+  };
+  const ok = await confirmDialog('Confirmar exclusão', `Deseja realmente excluir este ${nomes[tabela] || 'registro'}? Esta ação não pode ser desfeita.`);
+  if (!ok) return;
   try {
-    await supabase.from(tabela).delete().eq('id', id);
-    toast('Excluído', 'Removido', 'success');
-    await carregarTudo(); renderPage(App.currentPage);
+    await sbCall(() => supabase.from(tabela).delete().eq('id', id));
+    toast('Excluído', `${nomes[tabela] || 'Registro'} removido`, 'success');
+    await carregarTudo();
+    renderPage(App.currentPage);
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
+/* ============ PROTEÇÃO CONTRA SAÍDA ACIDENTAL ============ */
+window.addEventListener('beforeunload', (e) => {
+  if ($('#modalBackdrop')?.classList.contains('open')) {
+    e.preventDefault();
+    e.returnValue = 'Tem alterações não salvas. Deseja realmente sair?';
+  }
+});
+
+/* ============ INICIALIZAÇÃO ============ */
 document.addEventListener('DOMContentLoaded', checkAuth);
+
+// Error handler global
+window.addEventListener('error', (e) => Logger.error('global', e.message, e));
+window.addEventListener('unhandledrejection', (e) => Logger.error('promise', e.reason?.message || 'Erro', e.reason));
 </script>
 </body>
 </html>
