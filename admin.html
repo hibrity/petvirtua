@@ -316,7 +316,7 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
 
-    <div class="content" id="pageContent"><!-- páginas renderizadas aqui --></div>
+    <div class="content" id="pageContent"></div>
   </main>
 </div>
 
@@ -351,7 +351,6 @@ const el = (html) => { const d = document.createElement('div'); d.innerHTML = ht
 const fmtMoney = v => new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(v || 0);
 const fmtDate = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
 const fmtDateTime = d => d ? new Date(d).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '—';
-const uid = () => Math.random().toString(36).slice(2,9);
 
 // Toast
 function toast(title, msg='', type='info') {
@@ -388,31 +387,53 @@ const masks = {
   dinheiro: v => { v = v.replace(/\D/g,''); const n = parseInt(v||'0')/100; return fmtMoney(n).replace('R$','').trim(); }
 };
 
-// ==================== AUTENTICAÇÃO ====================
+// ==================== AUTENTICAÇÃO (CORRIGIDA) ====================
 async function checkAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return window.location.href = 'index.html';
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // ❌ SEM sessão → volta para login
+    if (!session) {
+      console.log("Sem sessão, redirecionando para login");
+      window.location.href = 'index.html';
+      return;
+    }
 
-  App.user = session.user;
-  const { data: profile } = await supabase.from('profiles').select('*, petshops(*)').eq('id', session.user.id).maybeSingle();
-  if (!profile || profile.tipo !== 'admin') { await supabase.auth.signOut(); return window.location.href='index.html'; }
+    // ✅ Verifica se tem petshop cadastrado para este usuário
+    const { data: loja, error: lojaErr } = await supabase
+      .from('petshops')
+      .select('*')
+      .eq('usuario_id', session.user.id)
+      .maybeSingle();
 
-  // se profile já traz petshop via join
-  let loja = profile.petshops;
-  if (!loja) {
-    const { data } = await supabase.from('petshops').select('*').eq('usuario_id', session.user.id).maybeSingle();
-    loja = data;
+    // ❌ Se NÃO tem petshop → faz logout e volta
+    if (!loja) {
+      console.log("Sem petshop, fazendo logout");
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+      return;
+    }
+
+    App.user = session.user;
+    App.loja = loja;
+
+    // Atualiza UI com nome do usuário (vindo do metadata ou email)
+    const nome = session.user.user_metadata?.nome || session.user.email;
+    $('#userName').textContent = nome;
+    $('#userAvatar').textContent = nome[0].toUpperCase();
+
+    // ✅ Tudo OK → remove loading e mostra o painel
+    $('#loading').remove();
+    $('#app').classList.remove('hidden');
+
+    await carregarTudo();
+    renderPage('dashboard');
+    
+  } catch (e) {
+    console.error("Erro no checkAuth:", e);
+    toast('Erro', 'Falha ao carregar painel: ' + e.message, 'error');
+    window.location.href = 'index.html';
   }
-  App.loja = loja || { id: null, loja_nome: profile.nome || 'Meu Pet Shop' };
-
-  $('#userName').textContent = profile.nome || session.user.email;
-  $('#userAvatar').textContent = (profile.nome || session.user.email)[0].toUpperCase();
-
-  $('#loading').remove();
-  $('#app').classList.remove('hidden');
-
-  await carregarTudo();
-  renderPage('dashboard');
 }
 
 async function logout() {
@@ -501,7 +522,7 @@ Page.dashboard = () => {
       <div class="stat-card"><div class="stat-icon blue">📅</div><div><div class="stat-label">Agendamentos Hoje</div><div class="stat-value">${agendamentosHoje.length}</div><div class="stat-change up">▲ ${App.data.agendamentos.length} no total</div></div></div>
       <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Vendas no Mês</div><div class="stat-value">${fmtMoney(totalMes)}</div><div class="stat-change up">${vendasMes.length} vendas</div></div></div>
       <div class="stat-card"><div class="stat-icon orange">👥</div><div><div class="stat-label">Clientes</div><div class="stat-value">${App.data.clientes.length}</div><div class="stat-change up">${App.data.pets.length} pets cadastrados</div></div></div>
-      <div class="stat-card"><div class="stat-icon purple">📦</div><div><div class="stat-label">Produtos em Baixa</div><div class="stat-value">${App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo||0)).length}</div><div class="stat-change ${App.data.produtos.length ? '' : ''}">Total: ${App.data.produtos.length}</div></div></div>
+      <div class="stat-card"><div class="stat-icon purple">📦</div><div><div class="stat-label">Produtos em Baixa</div><div class="stat-value">${App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo||0)).length}</div><div class="stat-change">Total: ${App.data.produtos.length}</div></div></div>
     </div>
 
     <div class="dashboard-grid">
@@ -708,20 +729,20 @@ function formCliente(id) {
   const c = id ? App.data.clientes.find(x => x.id === id) : null;
   openModal(c ? 'Editar Cliente' : 'Novo Cliente', `
     <div class="field-grid">
-      <div class="field full"><label>Nome Completo <span class="req">*</span></label><input id="c_nome" value="${c?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome Completo <span class="req">*</span></label><input id="c_nome" value="${c?.nome||''}"></div>
       <div class="field"><label>CPF</label><input id="c_cpf" value="${c?.cpf||''}" placeholder="000.000.000-00"></div>
       <div class="field"><label>Telefone <span class="req">*</span></label><input id="c_tel" value="${c?.telefone||''}" placeholder="(00) 00000-0000"></div>
       <div class="field"><label>E-mail</label><input id="c_email" type="email" value="${c?.email||''}"></div>
       <div class="field"><label>Data Nasc.</label><input id="c_nasc" type="date" value="${c?.data_nascimento||''}"></div>
-      <div class="field full"><label>Endereço</label><input id="c_end" value="${c?.endereco||''}"></div>
-      <div class="field full"><label>Observações</label><textarea id="c_obs">${c?.observacoes||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Endereço</label><input id="c_end" value="${c?.endereco||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="c_obs">${c?.observacoes||''}</textarea></div>
     </div>
   `, `
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
     <button class="btn btn-primary" onclick="salvarCliente('${id||''}')">💾 Salvar</button>
   `);
-  mask($('#c_cpf'), masks.cpf);
-  mask($('#c_tel'), masks.tel);
+  if ($('#c_cpf')) mask($('#c_cpf'), masks.cpf);
+  if ($('#c_tel')) mask($('#c_tel'), masks.tel);
 }
 async function salvarCliente(id) {
   const d = {
@@ -798,7 +819,7 @@ function formPet(id) {
       <div class="field"><label>Data Nascimento</label><input type="date" id="p_nasc" value="${p?.data_nascimento||''}"></div>
       <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" id="p_peso" value="${p?.peso||''}"></div>
       <div class="field"><label>Cor</label><input id="p_cor" value="${p?.cor||''}"></div>
-      <div class="field full"><label>Observações (alergias, comportamento...)</label><textarea id="p_obs">${p?.observacoes||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações (alergias, comportamento...)</label><textarea id="p_obs">${p?.observacoes||''}</textarea></div>
     </div>
   `, `
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -853,7 +874,7 @@ function formServico(id) {
   const s = id ? App.data.servicos.find(x => x.id === id) : null;
   openModal(s ? 'Editar Serviço' : 'Novo Serviço', `
     <div class="field-grid">
-      <div class="field full"><label>Nome <span class="req">*</span></label><input id="s_nome" value="${s?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="s_nome" value="${s?.nome||''}"></div>
       <div class="field"><label>Categoria</label><select id="s_cat">
         <option ${s?.categoria==='Banho'?'selected':''}>Banho</option>
         <option ${s?.categoria==='Tosa'?'selected':''}>Tosa</option>
@@ -865,7 +886,7 @@ function formServico(id) {
       </select></div>
       <div class="field"><label>Duração (min)</label><input type="number" id="s_dur" value="${s?.duracao_min||''}"></div>
       <div class="field"><label>Preço (R$) <span class="req">*</span></label><input type="number" step="0.01" id="s_preco" value="${s?.preco||''}"></div>
-      <div class="field full"><label>Descrição</label><textarea id="s_desc">${s?.descricao||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="s_desc">${s?.descricao||''}</textarea></div>
     </div>
   `, `
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -938,8 +959,8 @@ function formOS(id) {
         <option value="cancelada" ${o?.status==='cancelada'?'selected':''}>Cancelada</option>
       </select></div>
       <div class="field"><label>Total (R$)</label><input type="number" step="0.01" id="o_total" value="${o?.total||0}"></div>
-      <div class="field full"><label>Serviços executados</label><textarea id="o_serv" placeholder="Liste os serviços realizados...">${o?.servicos_executados||''}</textarea></div>
-      <div class="field full"><label>Observações</label><textarea id="o_obs">${o?.observacoes||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Serviços executados</label><textarea id="o_serv" placeholder="Liste os serviços realizados...">${o?.servicos_executados||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Observações</label><textarea id="o_obs">${o?.observacoes||''}</textarea></div>
     </div>
   `, `
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -1013,7 +1034,7 @@ function formProduto(id) {
   const p = id ? App.data.produtos.find(x => x.id === id) : null;
   openModal(p ? 'Editar Produto' : 'Novo Produto', `
     <div class="field-grid">
-      <div class="field full"><label>Nome <span class="req">*</span></label><input id="pr_nome" value="${p?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="pr_nome" value="${p?.nome||''}"></div>
       <div class="field"><label>Categoria</label><select id="pr_cat">
         <option ${p?.categoria==='Ração'?'selected':''}>Ração</option>
         <option ${p?.categoria==='Brinquedo'?'selected':''}>Brinquedo</option>
@@ -1027,7 +1048,7 @@ function formProduto(id) {
       <div class="field"><label>Preço Venda (R$) <span class="req">*</span></label><input type="number" step="0.01" id="pr_venda" value="${p?.preco_venda||''}"></div>
       <div class="field"><label>Estoque Atual</label><input type="number" id="pr_est" value="${p?.estoque_atual||0}"></div>
       <div class="field"><label>Estoque Mínimo</label><input type="number" id="pr_min" value="${p?.estoque_minimo||0}"></div>
-      <div class="field full"><label>Descrição</label><textarea id="pr_desc">${p?.descricao||''}</textarea></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="pr_desc">${p?.descricao||''}</textarea></div>
     </div>
   `, `
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
@@ -1133,7 +1154,6 @@ async function salvarVenda() {
     // decrementa estoque
     for (const i of vendaItens) {
       await supabase.rpc('decrementar_estoque', { produto_id_in: i.produto_id, qtd: i.quantidade }).catch(() => {
-        // fallback manual
         const p = App.data.produtos.find(x=>x.id===i.produto_id);
         if (p) supabase.from('produtos').update({ estoque_atual: Math.max(0, p.estoque_atual - i.quantidade) }).eq('id', p.id);
       });
@@ -1193,7 +1213,7 @@ function formFinanceiro(id) {
   const f = id ? App.data.financeiro.find(x => x.id === id) : null;
   openModal(f ? 'Editar Conta' : 'Nova Conta', `
     <div class="field-grid">
-      <div class="field full"><label>Descrição <span class="req">*</span></label><input id="f_desc" value="${f?.descricao||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descrição <span class="req">*</span></label><input id="f_desc" value="${f?.descricao||''}"></div>
       <div class="field"><label>Tipo</label><select id="f_tipo"><option value="receita" ${f?.tipo==='receita'?'selected':''}>Receita</option><option value="despesa" ${f?.tipo==='despesa'?'selected':''}>Despesa</option></select></div>
       <div class="field"><label>Categoria</label><select id="f_cat">
         <option>Serviços</option><option>Vendas</option><option>Aluguel</option><option>Salários</option><option>Fornecedores</option><option>Impostos</option><option>Marketing</option><option>Outros</option>
@@ -1261,7 +1281,7 @@ function formFuncionario(id) {
   const f = id ? App.data.funcionarios.find(x => x.id === id) : null;
   openModal(f ? 'Editar Funcionário' : 'Novo Funcionário', `
     <div class="field-grid">
-      <div class="field full"><label>Nome <span class="req">*</span></label><input id="fu_nome" value="${f?.nome||''}"></div>
+      <div class="field" style="grid-column:1/-1;"><label>Nome <span class="req">*</span></label><input id="fu_nome" value="${f?.nome||''}"></div>
       <div class="field"><label>Cargo</label><select id="fu_cargo">
         <option ${f?.cargo==='Banhist'?'selected':''}>Banhista</option>
         <option ${f?.cargo==='Tosador'?'selected':''}>Tosador</option>
@@ -1280,7 +1300,7 @@ function formFuncionario(id) {
     <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
     <button class="btn btn-primary" onclick="salvarFuncionario('${id||''}')">💾 Salvar</button>
   `);
-  mask($('#fu_tel'), masks.tel);
+  if ($('#fu_tel')) mask($('#fu_tel'), masks.tel);
 }
 async function salvarFuncionario(id) {
   const d = { nome: $('#fu_nome').value.trim(), cargo: $('#fu_cargo').value, salario: parseFloat($('#fu_sal').value)||0, telefone: $('#fu_tel').value, email: $('#fu_email').value, data_admissao: $('#fu_adm').value || null, ativo: $('#fu_ativo').value === 'true', loja_id: App.loja.id };
@@ -1359,24 +1379,24 @@ Page.config = () => {
           <div class="field"><label>CNPJ</label><input id="cf_cnpj" value="${l?.loja_cnpj||''}"></div>
           <div class="field"><label>Telefone</label><input id="cf_tel" value="${l?.loja_telefone||''}"></div>
           <div class="field"><label>WhatsApp</label><input id="cf_wpp" value="${l?.loja_whatsapp||''}"></div>
-          <div class="field full"><label>E-mail</label><input id="cf_email" value="${l?.loja_email||''}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>E-mail</label><input id="cf_email" value="${l?.loja_email||''}"></div>
           <div class="field"><label>CEP</label><input id="cf_cep" value="${l?.cep||''}"></div>
           <div class="field"><label>Número</label><input id="cf_num" value="${l?.numero||''}"></div>
-          <div class="field full"><label>Rua</label><input id="cf_rua" value="${l?.rua||''}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Rua</label><input id="cf_rua" value="${l?.rua||''}"></div>
           <div class="field"><label>Bairro</label><input id="cf_bairro" value="${l?.bairro||''}"></div>
           <div class="field"><label>Cidade</label><input id="cf_cidade" value="${l?.cidade||''}"></div>
           <div class="field"><label>Estado</label><input id="cf_estado" value="${l?.estado||''}"></div>
           <div class="field"><label>Horário</label><input id="cf_hor" value="${l?.horario_funcionamento||''}"></div>
-          <div class="field full"><label>Descrição</label><textarea id="cf_desc">${l?.descricao||''}</textarea></div>
+          <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="cf_desc">${l?.descricao||''}</textarea></div>
         </div>
         <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar Alterações</button>
       </div>
     </div>
   `;
-  mask($('#cf_cnpj'), masks.cnpj);
-  mask($('#cf_tel'), masks.tel);
-  mask($('#cf_wpp'), masks.tel);
-  mask($('#cf_cep'), masks.cep);
+  if ($('#cf_cnpj')) mask($('#cf_cnpj'), masks.cnpj);
+  if ($('#cf_tel')) mask($('#cf_tel'), masks.tel);
+  if ($('#cf_wpp')) mask($('#cf_wpp'), masks.tel);
+  if ($('#cf_cep')) mask($('#cf_cep'), masks.cep);
 };
 async function salvarConfig() {
   try {
