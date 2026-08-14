@@ -52,6 +52,7 @@
     .resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
     .card-resumo { background: white; padding: 1rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
     .card-resumo .numero { font-size: 1.8rem; font-weight: bold; color: #6366f1; }
+    .card-resumo .rotulo { font-size: 0.85rem; color: #64748b; margin-top: 0.2rem; }
 
     .grade-modulos {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;
@@ -79,14 +80,21 @@
     .btn-primario { background: #6366f1; color: white; }
     .btn-sucesso { background: #16a34a; color: white; }
     .btn-perigo { background: #dc2626; color: white; }
+    .btn-aviso { background: #f59e0b; color: white; }
     .lista { margin-top: 1.2rem; }
     .item-lista { padding: 0.85rem; border-bottom: 1px solid #f1f5f9; background: #fafafa; border-radius: 6px; margin-bottom: 0.5rem; }
     .item-lista:last-child { border-bottom: none; }
     .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 600; margin-left: 0.4rem; }
     .tag-agendado { background: #dbeafe; color: #1e40af; }
     .tag-concluido { background: #dcfce7; color: #166534; }
+    .tag-cancelado { background: #fee2e2; color: #dc2626; }
     .vazio { color: #94a3b8; text-align: center; padding: 2rem; }
     .acoes { margin-top: 0.4rem; }
+    .rel-quadro { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1rem; margin-top: 1rem; }
+    .rel-card { background: #f8fafc; padding: 1rem; border-radius: 8px; border-left: 3px solid #6366f1; }
+    .rel-card h4 { font-size: 0.9rem; color: #64748b; margin-bottom: 0.5rem; }
+    .rel-card .valor { font-size: 1.3rem; font-weight: bold; color: #1e293b; }
+    .linha { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #e2e8f0; }
   </style>
 </head>
 <body>
@@ -95,7 +103,7 @@
 <div class="tela-login" id="telaLogin">
   <div class="caixa-login">
     <h1>🐾 PetVirtua</h1>
-    <p class="slogan">Sistema de Gestão para Pet Shops</p>
+    <p class="slogan">Sistema Completo de Gestão para Pet Shops</p>
     <input type="text" id="chaveAcesso" placeholder="Chave de Acesso" maxlength="35" autocomplete="off" />
     <button onclick="verificarChave()">Entrar no Sistema</button>
     <div class="erro" id="msgErro">❌ Chave inválida! Tente novamente.</div>
@@ -112,46 +120,47 @@
   <div class="container">
     <div class="boas-vindas">
       <h2>Bem-vindo! 👋</h2>
-      <p>Controle tudo do seu pet shop em um só lugar.</p>
+      <p>Controle tudo do seu pet shop em um só lugar — agenda, clientes, estoque, caixa, serviços e relatórios.</p>
     </div>
 
     <!-- Cards de Resumo -->
     <div class="resumo">
-      <div class="card-resumo"><div class="numero" id="qtdAgenda">0</div><div>Agendamentos</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdClientes">0</div><div>Clientes</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdEstoque">0</div><div>Produtos</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdServicos">0</div><div>Serviços</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdAgenda">0</div><div class="rotulo">Agendamentos</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdClientes">0</div><div class="rotulo">Clientes</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdEstoque">0</div><div class="rotulo">Produtos</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdServicos">0</div><div class="rotulo">Serviços</div></div>
+      <div class="card-resumo"><div class="numero" id="saldoGeral">0</div><div class="rotulo">Saldo R$</div></div>
     </div>
 
     <!-- Módulos -->
     <div class="grade-modulos" id="gradeModulos">
       <div class="modulo" onclick="abrirModulo('agenda')">
         <h3>📅 Agenda Banho e Tosa</h3>
-        <p>Agende, confirme e organize horários por serviço.</p>
+        <p>Agende, confirme e organize horários por serviço e profissional.</p>
       </div>
       <div class="modulo" onclick="abrirModulo('clientes')">
         <h3>🤝 Cadastro de Clientes</h3>
-        <p>Dados, histórico de pets, contatos e lembretes.</p>
+        <p>Dados, histórico de pets, contatos e informações completas.</p>
       </div>
       <div class="modulo" onclick="abrirModulo('estoque')">
         <h3>📦 Estoque e Produtos</h3>
-        <p>Controle de rações, validades, lotes e reposição.</p>
+        <p>Controle de rações, validades, lotes, custos e reposição.</p>
       </div>
       <div class="modulo" onclick="abrirModulo('caixa')">
         <h3>💰 Caixa e Financeiro</h3>
-        <p>Entradas, saídas, lucro por serviço e faturamento.</p>
+        <p>Entradas, saídas, lucro por serviço e faturamento diário.</p>
       </div>
       <div class="modulo" onclick="abrirModulo('servicos')">
-        <h3>✅ Serviços e Preços</h3>
-        <p>Tabela de serviços, valores e tempo de execução.</p>
+        <h3>✅ Serviços e Tabela de Preços</h3>
+        <p>Cadastre serviços, valores, tempo de execução e custos.</p>
       </div>
       <div class="modulo" onclick="abrirModulo('relatorios')">
-        <h3>📊 Relatórios</h3>
-        <p>Produtos mais vendidos, horários de pico e desempenho.</p>
+        <h3>📊 Relatórios e Desempenho</h3>
+        <p>Mais vendidos, serviços mais lucrativos, faturamento e estatísticas.</p>
       </div>
     </div>
 
-    <!-- Painel: Agenda -->
+    <!-- 📅 Painel: Agenda -->
     <div id="painelAgenda" class="painel">
       <button class="btn-voltar" onclick="voltar()">← Voltar</button>
       <h2>📅 Agenda de Banho e Tosa</h2>
@@ -159,34 +168,37 @@
       <div class="form-grupo"><label>Pet / Raça / Porte</label><input type="text" id="agPet" placeholder="Ex: Thor — Poodle — Grande" /></div>
       <div class="form-grupo"><label>Serviço</label>
         <select id="agServico">
-          <option>Banho</option><option>Banho e Tosa</option><option>Tosa Estética</option><option>Hidratação</option><option>Outro</option>
+          <option>Banho</option><option>Banho e Tosa</option><option>Tosa Estética</option><option>Hidratação</option><option>Consulta</option><option>Outro</option>
         </select>
       </div>
       <div class="form-grupo"><label>Data e Hora</label><input type="datetime-local" id="agData" /></div>
       <div class="form-grupo"><label>Profissional Responsável</label><input type="text" id="agPro" placeholder="Quem vai atender" /></div>
-      <button class="btn btn-primario" onclick="agendar()">Agendar</button>
+      <div class="form-grupo"><label>Status</label>
+        <select id="agStatus"><option>Agendado</option><option>Concluído</option><option>Cancelado</option></select>
+      </div>
+      <button class="btn btn-primario" onclick="agendar()">Salvar Agendamento</button>
       <div class="lista" id="listaAgenda"><div class="vazio">Nenhum agendamento.</div></div>
     </div>
 
-    <!-- Painel: Clientes -->
+    <!-- 🤝 Painel: Clientes -->
     <div id="painelClientes" class="painel">
       <button class="btn-voltar" onclick="voltar()">← Voltar</button>
       <h2>🤝 Cadastro de Clientes</h2>
       <div class="form-grupo"><label>Nome Completo</label><input type="text" id="clNome" /></div>
       <div class="form-grupo"><label>Telefone / WhatsApp</label><input type="tel" id="clTel" placeholder="(00) 00000-0000" /></div>
       <div class="form-grupo"><label>Endereço</label><input type="text" id="clEnd" /></div>
-      <div class="form-grupo"><label>Pets</label><textarea id="clPets" placeholder="Nome, raça, idade, alergias..."></textarea></div>
+      <div class="form-grupo"><label>Pets (nome, raça, idade, alergias)</label><textarea id="clPets" rows="3" placeholder="Ex: Thor, Poodle, 5 anos, sem alergias"></textarea></div>
       <button class="btn btn-primario" onclick="cadastrarCliente()">Salvar Cliente</button>
       <div class="lista" id="listaClientes"><div class="vazio">Nenhum cliente cadastrado.</div></div>
     </div>
 
-    <!-- Painel: Estoque -->
+    <!-- 📦 Painel: Estoque -->
     <div id="painelEstoque" class="painel">
       <button class="btn-voltar" onclick="voltar()">← Voltar</button>
       <h2>📦 Estoque e Produtos</h2>
       <div class="form-grupo"><label>Nome do Produto</label><input type="text" id="prNome" /></div>
       <div class="form-grupo"><label>Categoria</label>
-        <select id="prCat"><option>Ração</option><option>Medicamento</option><option>Acessório</option><option>Brinquedo</option><option>Outro</option></select>
+        <select id="prCat"><option>Ração</option><option>Medicamento</option><option>Acessório</option><option>Brinquedo</option><option>Higiene</option><option>Outro</option></select>
       </div>
       <div class="form-grupo"><label>Quantidade</label><input type="number" id="prQtd" min="1" /></div>
       <div class="form-grupo"><label>Valor de Custo (R$)</label><input type="number" step="0.01" id="prCusto" /></div>
@@ -196,7 +208,7 @@
       <div class="lista" id="listaEstoque"><div class="vazio">Estoque vazio.</div></div>
     </div>
 
-    <!-- Painel: Caixa -->
+    <!-- 💰 Painel: Caixa -->
     <div id="painelCaixa" class="painel">
       <button class="btn-voltar" onclick="voltar()">← Voltar</button>
       <h2>💰 Caixa e Financeiro</h2>
@@ -207,14 +219,50 @@
       <div class="form-grupo"><label>Valor R$</label><input type="number" step="0.01" id="cxValor" /></div>
       <button class="btn btn-sucesso" onclick="registrarMovimento()">Registrar</button>
       <div style="margin-top:1.5rem; padding:1rem; background:#f0fdf4; border-radius:8px;">
-        <strong>Saldo Atual:</strong> R$ <span id="saldo">0,00</span>
+        <strong>💵 Saldo Atual:</strong> R$ <span id="saldo">0,00</span>
       </div>
       <div class="lista" id="listaCaixa"><div class="vazio">Sem movimentos.</div></div>
     </div>
 
-    <!-- Painéis em desenvolvimento -->
-    <div id="painelServicos" class="painel"><button class="btn-voltar" onclick="voltar()">← Voltar</button><h2>✅ Serviços e Preços</h2><p>Cadastre seus serviços, valores e tempo médio. (em desenvolvimento)</p></div>
-    <div id="painelRelatorios" class="painel"><button class="btn-voltar" onclick="voltar()">← Voltar</button><h2>📊 Relatórios</h2><p>Análise de vendas, produtos e horários. (em desenvolvimento)</p></div>
+    <!-- ✅ Painel: Serviços e Preços -->
+    <div id="painelServicos" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>✅ Tabela de Serviços e Preços</h2>
+      <div class="form-grupo"><label>Nome do Serviço</label><input type="text" id="svNome" placeholder="Ex: Banho — Cão Pequeno" /></div>
+      <div class="form-grupo"><label>Valor de Venda (R$)</label><input type="number" step="0.01" id="svValor" /></div>
+      <div class="form-grupo"><label>Custo/Mão de Obra (R$)</label><input type="number" step="0.01" id="svCusto" placeholder="Custo com mão de obra e produtos" /></div>
+      <div class="form-grupo"><label>Tempo Estimado (min)</label><input type="number" id="svTempo" placeholder="Ex: 60" /></div>
+      <div class="form-grupo"><label>Observações</label><input type="text" id="svObs" placeholder="Ex: Inclui secagem e perfume" /></div>
+      <button class="btn btn-primario" onclick="cadastrarServico()">Salvar Serviço</button>
+      <div class="lista" id="listaServicos"><div class="vazio">Nenhum serviço cadastrado.</div></div>
+    </div>
+
+    <!-- 📊 Painel: Relatórios -->
+    <div id="painelRelatorios" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>📊 Relatórios e Desempenho</h2>
+      <p style="margin-bottom:1rem; color:#64748b;">Resumo geral do desempenho do seu Pet Shop</p>
+      <div class="rel-quadro">
+        <div class="rel-card"><h4>💰 Faturamento Total</h4><div class="valor" id="relFatTotal">R$ 0,00</div></div>
+        <div class="rel-card"><h4>📦 Vendas de Produtos</h4><div class="valor" id="relVendas">0</div></div>
+        <div class="rel-card"><h4>✅ Serviços Realizados</h4><div class="valor" id="relServicos">0</div></div>
+        <div class="rel-card"><h4>🏆 Serviço Mais Pedido</h4><div class="valor" id="relTopServico">-</div></div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <h3 style="margin-bottom:0.8rem;">📋 Resumo Financeiro</h3>
+        <div id="resumoFinanceiro">
+          <div class="linha"><span>Total de Entradas</span><span>R$ 0,00</span></div>
+          <div class="linha"><span>Total de Saídas</span><span>R$ 0,00</span></div>
+          <div class="linha" style="font-weight:bold; color:#16a34a; border-top:2px solid #ccc; padding-top:0.5rem;">
+            <span>💵 LUCRO</span><span>R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <h3 style="margin-bottom:0.8rem;">📅 Agendamentos Recentes</h3>
+        <div id="resumoAgenda"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -222,6 +270,7 @@
 // 🔑 Chave de acesso
 const CHAVE_AUTORIZADA = "7846SIS2026SPBRAS8510";
 
+// ✅ Login
 function verificarChave() {
   const chave = document.getElementById("chaveAcesso").value.trim();
   if (chave === CHAVE_AUTORIZADA) {
@@ -239,6 +288,7 @@ function sair() {
   document.getElementById("msgErro").style.display = "none";
 }
 
+// Navegação
 let painelAtivo = null;
 function abrirModulo(nome) {
   document.getElementById("gradeModulos").style.display = "none";
@@ -260,23 +310,27 @@ async function agendar() {
     servico: document.getElementById("agServico").value,
     data: document.getElementById("agData").value,
     profissional: document.getElementById("agPro").value,
-    status: "Agendado"
+    status: document.getElementById("agStatus").value
   };
   const { error } = await supabase.from("agenda").insert([dados]);
   if (error) return alert("Erro: " + error.message);
-  limparCampos(["agCliente","agPet","agServico","agData","agPro"]);
+  limparCampos(["agCliente","agPet","agServico","agData","agPro","agStatus"]);
   carregarAgenda();
 }
 async function carregarAgenda() {
   const { data } = await supabase.from("agenda").select("*").order("data", {asc:true});
   const el = document.getElementById("listaAgenda");
-  el.innerHTML = data?.length ? data.map(a => `<div class="item-lista">
-    <strong>${a.cliente}</strong> — ${a.pet}
-    <span class="tag tag-agendado">${a.status}</span><br>
-    ${a.servico} • ${a.profissional || "Sem responsável"}<br>
-    <small>${new Date(a.data).toLocaleString("pt-BR")}</small>
-  </div>`).join("") : `<div class="vazio">Nenhum agendamento.</div>`;
+  el.innerHTML = data?.length ? data.map(a => {
+    let tagClass = a.status === "Concluído" ? "tag-concluido" : a.status === "Cancelado" ? "tag-cancelado" : "tag-agendado";
+    return `<div class="item-lista">
+      <strong>${a.cliente}</strong> — ${a.pet}
+      <span class="tag ${tagClass}">${a.status}</span><br>
+      ${a.servico} • ${a.profissional || "Sem responsável"}<br>
+      <small>${new Date(a.data).toLocaleString("pt-BR")}</small>
+    </div>`;
+  }).join("") : `<div class="vazio">Nenhum agendamento.</div>`;
   document.getElementById("qtdAgenda").textContent = data?.length || 0;
+  window.dadosAgenda = data || [];
 }
 
 // 🤝 Clientes
@@ -322,7 +376,7 @@ async function carregarEstoque() {
   el.innerHTML = data?.length ? data.map(p => `<div class="item-lista">
     <strong>${p.nome}</strong> — ${p.categoria}
     <span style="float:right; font-weight:bold">${p.quantidade} un</span><br>
-    Custo: R$${p.custo?.toFixed(2)} • Venda: R$${p.venda?.toFixed(2)}
+    Custo: R$${(p.custo||0).toFixed(2)} • Venda: R$${(p.venda||0).toFixed(2)}
     <br><small>Val/Lote: ${p.validade_lote || "Não informado"}</small>
   </div>`).join("") : `<div class="vazio">Estoque vazio.</div>`;
   document.getElementById("qtdEstoque").textContent = data?.length || 0;
@@ -344,15 +398,86 @@ async function registrarMovimento() {
 }
 async function carregarCaixa() {
   const { data } = await supabase.from("caixa").select("*").order("id", {asc:false});
-  let saldo = 0;
-  data?.forEach(m => saldo += m.tipo === "Entrada" ? m.valor : -m.valor);
+  let entradas = 0, saidas = 0;
+  data?.forEach(m => m.tipo === "Entrada" ? entradas += m.valor : saidas += m.valor);
+  const saldo = entradas - saidas;
   document.getElementById("saldo").textContent = saldo.toFixed(2).replace(".",",");
+  document.getElementById("saldoGeral").textContent = saldo.toFixed(2).replace(".",",");
   const el = document.getElementById("listaCaixa");
   el.innerHTML = data?.length ? data.map(m => `<div class="item-lista">
     ${m.tipo === "Entrada" ? "🟢" : "🔴"} ${m.descricao}
     <span style="float:right">${m.tipo} — R$ ${m.valor?.toFixed(2)}</span><br>
     <small>${m.data}</small>
   </div>`).join("") : `<div class="vazio">Sem movimentos.</div>`;
+  window.dadosCaixa = { entradas, saidas, saldo };
+}
+
+// ✅ Serviços e Preços
+async function cadastrarServico() {
+  const dados = {
+    nome: document.getElementById("svNome").value,
+    valor: Number(document.getElementById("svValor").value),
+    custo: Number(document.getElementById("svCusto").value || 0),
+    tempo_min: Number(document.getElementById("svTempo").value || 0),
+    observacoes: document.getElementById("svObs").value
+  };
+  const { error } = await supabase.from("servicos").insert([dados]);
+  if (error) return alert("Erro: " + error.message);
+  limparCampos(["svNome","svValor","svCusto","svTempo","svObs"]);
+  carregarServicos();
+}
+async function carregarServicos() {
+  const { data } = await supabase.from("servicos").select("*").order("nome");
+  const el = document.getElementById("listaServicos");
+  el.innerHTML = data?.length ? data.map(s => {
+    const lucro = (s.valor || 0) - (s.custo || 0);
+    return `<div class="item-lista">
+      <strong>${s.nome}</strong>
+      <span style="float:right">Lucro: R$ ${lucro.toFixed(2)}</span><br>
+      Venda: R$ ${(s.valor||0).toFixed(2)} • Custo: R$ ${(s.custo||0).toFixed(2)}
+      ${s.tempo_min ? ` • Tempo: ${s.tempo_min} min` : ""}
+      ${s.observacoes ? `<br><small>${s.observacoes}</small>` : ""}
+    </div>`;
+  }).join("") : `<div class="vazio">Nenhum serviço cadastrado.</div>`;
+  document.getElementById("qtdServicos").textContent = data?.length || 0;
+  window.dadosServicos = data || [];
+}
+
+// 📊 Relatórios
+async function carregarRelatorios() {
+  const { data: agenda } = await supabase.from("agenda").select("*");
+  const { data: caixa } = await supabase.from("caixa").select("*");
+  const { data: servicos } = await supabase.from("servicos").select("*");
+
+  let entradas = 0, saidas = 0;
+  caixa?.forEach(m => m.tipo === "Entrada" ? entradas += m.valor : saidas += m.valor);
+  const lucro = entradas - saidas;
+
+  const concluidos = agenda?.filter(a => a.status === "Concluído").length || 0;
+
+  // Serviço mais pedido
+  const contagem = {};
+  agenda?.forEach(a => { contagem[a.servico] = (contagem[a.servico] || 0) + 1; });
+  const topServico = Object.entries(contagem).sort((a,b)=>b[1]-a[1])[0];
+
+  // Atualizar tela
+  document.getElementById("relFatTotal").textContent = `R$ ${lucro.toFixed(2).replace(".",",")}`;
+  document.getElementById("relVendas").textContent = caixa?.length || 0;
+  document.getElementById("relServicos").textContent = concluidos;
+  document.getElementById("relTopServico").textContent = topServico ? `${topServico[0]} (${topServico[1]})` : "-";
+
+  document.getElementById("resumoFinanceiro").innerHTML = `
+    <div class="linha"><span>Total de Entradas</span><span>R$ ${entradas.toFixed(2)}</span></div>
+    <div class="linha"><span>Total de Saídas</span><span>R$ ${saidas.toFixed(2)}</span></div>
+    <div class="linha" style="font-weight:bold; color:#16a34a; border-top:2px solid #ccc; padding-top:0.5rem;">
+      <span>💵 LUCRO</span><span>R$ ${lucro.toFixed(2)}</span>
+    </div>
+  `;
+
+  const recentes = agenda?.slice(-5).reverse() || [];
+  document.getElementById("resumoAgenda").innerHTML = recentes.length ? recentes.map(a =>
+    `<div class="linha"><span>${a.servico} — ${a.cliente}</span><span>${a.status}</span></div>`
+  ).join("") : `<div class="vazio">Sem agendamentos.</div>`;
 }
 
 function limparCampos(ids) { ids.forEach(id => { const el=document.getElementById(id); if(el) el.value=""; }); }
@@ -361,7 +486,8 @@ async function carregarTudo() {
   await carregarClientes();
   await carregarEstoque();
   await carregarCaixa();
-  document.getElementById("qtdServicos").textContent = "0";
+  await carregarServicos();
+  await carregarRelatorios();
 }
 
 document.getElementById("chaveAcesso").addEventListener("keypress", e => e.key === "Enter" && verificarChave());
