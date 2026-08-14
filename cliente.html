@@ -1,525 +1,191 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Área do Cliente — PetVirtua</title>
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-    window.supabase = createClient(
-      "https://xnbysaincrirvsykqgqj.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI"
-    )
-  </script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
-    
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #1e293b;
-      min-height: 100vh;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Área do Cliente — PetVirtua</title>
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+  window.supabase = createClient(
+    "https://xnbysaincrirvsykqgqj.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI"
+  );
+</script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #1e293b; min-height: 100vh; }
+.tela-acesso { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+.caixa-form {
+  background: rgba(255,255,255,.98); backdrop-filter: blur(20px);
+  padding: 2.5rem; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+  width: 100%; max-width: 460px; border: 1px solid rgba(255,255,255,.2);
+}
+.caixa-form h1 {
+  background: linear-gradient(135deg,#667eea,#764ba2); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; margin-bottom: .5rem; font-size: 2.2rem;
+  font-weight: 900; text-align: center; letter-spacing: -.5px;
+}
+.caixa-form .slogan { color: #64748b; margin-bottom: 2rem; font-size: 1rem; text-align: center; font-weight: 500; }
+.caixa-form h2 { font-size: 1.15rem; color: #334155; margin: 1.5rem 0 1rem; padding-bottom: .5rem; border-bottom: 2px solid #e0e7ff; font-weight: 700; }
+.form-grupo { margin-bottom: 1.1rem; }
+label { display: block; margin-bottom: .5rem; font-weight: 600; font-size: .9rem; color: #475569; }
+input, select, textarea {
+  width: 100%; padding: .95rem; border: 2px solid #e2e8f0; border-radius: 14px;
+  font-size: 1rem; transition: all .3s; background: white; font-family: inherit;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,.1); }
+.btn {
+  width: 100%; padding: 1.1rem; background: linear-gradient(135deg,#667eea,#764ba2);
+  color: white; border: none; border-radius: 16px; font-size: 1.05rem; font-weight: 700;
+  cursor: pointer; transition: all .3s; margin-top: .5rem;
+  box-shadow: 0 10px 25px -5px rgba(102,126,234,.4);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px -5px rgba(102,126,234,.5); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn-secundario { background: #f1f5f9; color: #475569; box-shadow: none; }
+.btn-secundario:hover { background: #e2e8f0; transform: none; }
+.erro { color: #dc2626; margin-top: 1rem; display: none; font-weight: 600; text-align: center; padding: .8rem; background: #fee2e2; border-radius: 12px; }
+.sucesso { color: #16a34a; margin-top: 1rem; display: none; font-weight: 600; text-align: center; padding: .8rem; background: #dcfce7; border-radius: 12px; }
+.troca-tela { text-align: center; margin-top: 1.5rem; font-size: .95rem; color: #64748b; cursor: pointer; }
+.troca-tela span { color: #667eea; font-weight: 700; }
+.info-box { background: #fef3c7; border: 2px solid #f59e0b; padding: .7rem 1rem; border-radius: 12px; font-size: .85rem; color: #92400e; margin-bottom: 1rem; font-weight: 600; }
 
-    /* Tela de Acesso */
-    .tela-acesso {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 1.5rem;
-    }
+.tela-principal { display: none; min-height: 100vh; background: #f8fafc; }
+header {
+  background: linear-gradient(135deg,#667eea,#764ba2); color: white;
+  padding: 1.3rem 1.5rem; box-shadow: 0 10px 25px -5px rgba(102,126,234,.3);
+  position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center;
+}
+header h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -.3px; }
+.btn-sair {
+  background: rgba(255,255,255,.25); border: none; color: white;
+  padding: .6rem 1.2rem; border-radius: 12px; cursor: pointer; font-weight: 600;
+}
+.btn-sair:hover { background: rgba(255,255,255,.35); }
+.navegacao {
+  display: flex; justify-content: space-around; background: white;
+  padding: .9rem 0; position: fixed; bottom: 0; left: 0; right: 0;
+  box-shadow: 0 -5px 25px rgba(0,0,0,.08); z-index: 100; border-top: 1px solid #e2e8f0;
+}
+.nav-btn {
+  background: none; border: none; display: flex; flex-direction: column;
+  align-items: center; padding: .5rem .8rem; cursor: pointer; color: #64748b;
+  font-size: .75rem; font-weight: 700; border-radius: 12px; position: relative;
+}
+.nav-btn.ativo { color: #667eea; background: #e0e7ff; }
+.nav-btn span { font-size: 1.5rem; margin-bottom: .3rem; }
+.nav-btn .badge-notif {
+  position: absolute; top: -2px; right: 2px; background: #ef4444; color: white;
+  font-size: .65rem; padding: .1rem .4rem; border-radius: 10px; font-weight: 800; min-width: 18px;
+}
+.container { padding: 1.5rem; padding-bottom: 100px; max-width: 750px; margin: 0 auto; }
+.aba { display: none; animation: aparecer .4s ease-out; }
+.aba.ativa { display: block; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.cartao {
+  background: white; padding: 1.8rem; border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.06); margin-bottom: 1.5rem; border: 1px solid #f1f5f9;
+}
+.cartao h2 { font-size: 1.25rem; color: #0f172a; margin-bottom: 1.3rem; display: flex; align-items: center; gap: .6rem; font-weight: 800; }
+.btn-acao {
+  padding: .85rem 1.4rem; border: none; border-radius: 14px; font-weight: 700;
+  cursor: pointer; font-size: 1rem; transition: all .3s;
+  background: linear-gradient(135deg,#667eea,#764ba2); color: white; width: 100%;
+  box-shadow: 0 6px 20px -5px rgba(102,126,234,.4);
+}
+.btn-acao:hover { box-shadow: 0 10px 30px -5px rgba(102,126,234,.5); transform: translateY(-2px); }
+.btn-sucesso { background: linear-gradient(135deg,#10b981,#059669); box-shadow: 0 6px 20px -5px rgba(16,185,129,.4); }
+.item {
+  padding: 1.2rem; background: linear-gradient(135deg,#f0f9ff,#e0f2fe);
+  border-radius: 16px; margin-bottom: 1rem; border-left: 5px solid #667eea;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.item h3 { font-size: 1.05rem; margin-bottom: .5rem; color: #0f172a; font-weight: 700; }
+.item p { font-size: .95rem; color: #475569; line-height: 1.5; }
+.tag { display: inline-block; padding: .35rem .8rem; border-radius: 10px; font-size: .85rem; font-weight: 700; margin-top: .6rem; }
+.tag-agendado { background: #dbeafe; color: #1e40af; }
+.tag-concluido { background: #dcfce7; color: #166534; }
+.tag-cancelado { background: #fee2e2; color: #991b1b; }
+.tag-em_andamento { background: #fef3c7; color: #92400e; }
+.vazio { text-align: center; padding: 3rem 1.5rem; color: #94a3b8; font-size: 1.05rem; font-weight: 500; }
 
-    .caixa-form {
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(20px);
-      padding: 2.5rem;
-      border-radius: 28px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      width: 100%;
-      max-width: 460px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
+/* CHAT */
+.caixa-mensagens {
+  height: 480px; overflow-y: auto; padding: 1.2rem;
+  background: linear-gradient(135deg,#f8fafc,#f1f5f9); border-radius: 18px;
+  margin-bottom: 1.2rem; border: 2px solid #e0e7ff;
+}
+.mensagem {
+  max-width: 85%; padding: 1rem 1.2rem; border-radius: 18px; margin-bottom: 1rem;
+  font-size: 1rem; line-height: 1.5; animation: slideIn .3s ease-out; word-wrap: break-word;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+.mensagem.cliente {
+  background: linear-gradient(135deg,#667eea,#764ba2); color: white;
+  margin-left: auto; border-bottom-right-radius: 6px; box-shadow: 0 4px 15px rgba(102,126,234,.3);
+}
+.mensagem.loja {
+  background: white; color: #1e293b; border: 2px solid #e0e7ff;
+  margin-right: auto; border-bottom-left-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.mensagem .hora { font-size: .72rem; opacity: .8; margin-top: .4rem; text-align: right; font-weight: 600; }
+.mensagem .autor { font-size: .72rem; font-weight: 700; opacity: .9; margin-bottom: .2rem; }
+.entrada-mensagem { display: flex; gap: .7rem; }
+.entrada-mensagem input { flex: 1; margin: 0; }
+.digitando { font-size: .85rem; color: #667eea; font-style: italic; padding: .5rem 1rem; background: white; border-radius: 20px; display: inline-block; margin-bottom: 1rem; }
 
-    .caixa-form h1 {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-      font-size: 2.2rem;
-      font-weight: 900;
-      text-align: center;
-      letter-spacing: -0.5px;
-    }
+.loading {
+  display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%; border-top-color: white; animation: spin .8s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-    .caixa-form .slogan {
-      color: #64748b;
-      margin-bottom: 2rem;
-      font-size: 1rem;
-      text-align: center;
-      font-weight: 500;
-    }
-
-    .caixa-form h2 {
-      font-size: 1.15rem;
-      color: #334155;
-      margin: 1.5rem 0 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #e0e7ff;
-      font-weight: 700;
-    }
-
-    .form-grupo { margin-bottom: 1.1rem; }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #475569;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 0.95rem;
-      border: 2px solid #e2e8f0;
-      border-radius: 14px;
-      font-size: 1rem;
-      transition: all 0.3s;
-      background: white;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 1.1rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 16px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin-top: 0.5rem;
-      box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 35px -5px rgba(102, 126, 234, 0.5);
-    }
-
-    .btn:active { transform: translateY(0); }
-
-    .btn-secundario {
-      background: #f1f5f9;
-      color: #475569;
-      margin-top: 0.5rem;
-      box-shadow: none;
-    }
-
-    .btn-secundario:hover {
-      background: #e2e8f0;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .erro {
-      color: #dc2626;
-      margin-top: 1rem;
-      display: none;
-      font-weight: 600;
-      text-align: center;
-      padding: 0.8rem;
-      background: #fee2e2;
-      border-radius: 12px;
-    }
-
-    .sucesso {
-      color: #16a34a;
-      margin-top: 1rem;
-      display: none;
-      font-weight: 600;
-      text-align: center;
-      padding: 0.8rem;
-      background: #dcfce7;
-      border-radius: 12px;
-    }
-
-    .troca-tela {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.95rem;
-      color: #64748b;
-      cursor: pointer;
-    }
-
-    .troca-tela span {
-      color: #667eea;
-      font-weight: 700;
-    }
-
-    /* Tela Principal */
-    .tela-principal { display: none; min-height: 100vh; background: #f8fafc; }
-
-    header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1.3rem 1.5rem;
-      box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-    }
-
-    .btn-sair {
-      background: rgba(255, 255, 255, 0.25);
-      border: none;
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .btn-sair:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transform: translateY(-1px);
-    }
-
-    /* Navegação */
-    .navegacao {
-      display: flex;
-      justify-content: space-around;
-      background: white;
-      padding: 0.9rem 0;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.08);
-      z-index: 100;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .nav-btn {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0.5rem 0.8rem;
-      cursor: pointer;
-      color: #64748b;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border-radius: 12px;
-      transition: all 0.2s;
-    }
-
-    .nav-btn.ativo {
-      color: #667eea;
-      background: #e0e7ff;
-    }
-
-    .nav-btn span {
-      font-size: 1.5rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .container {
-      padding: 1.5rem;
-      padding-bottom: 100px;
-      max-width: 750px;
-      margin: 0 auto;
-    }
-
-    .aba { display: none; animation: aparecer 0.4s ease-out; }
-    .aba.ativa { display: block; }
-
-    @keyframes aparecer {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .cartao {
-      background: white;
-      padding: 1.8rem;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      margin-bottom: 1.5rem;
-      border: 1px solid #f1f5f9;
-    }
-
-    .cartao h2 {
-      font-size: 1.25rem;
-      color: #0f172a;
-      margin-bottom: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-weight: 800;
-    }
-
-    .btn-acao {
-      padding: 0.85rem 1.4rem;
-      border: none;
-      border-radius: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.3s;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      width: 100%;
-      box-shadow: 0 6px 20px -5px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-acao:hover {
-      box-shadow: 0 10px 30px -5px rgba(102, 126, 234, 0.5);
-      transform: translateY(-2px);
-    }
-
-    .btn-sucesso {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      box-shadow: 0 6px 20px -5px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-sucesso:hover {
-      box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.5);
-    }
-
-    .item {
-      padding: 1.2rem;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-      border-radius: 16px;
-      margin-bottom: 1rem;
-      border-left: 5px solid #667eea;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-    }
-
-    .item h3 {
-      font-size: 1.05rem;
-      margin-bottom: 0.5rem;
-      color: #0f172a;
-      font-weight: 700;
-    }
-
-    .item p {
-      font-size: 0.95rem;
-      color: #475569;
-      line-height: 1.5;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 0.35rem 0.8rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-top: 0.6rem;
-    }
-
-    .tag-agendado { background: #dbeafe; color: #1e40af; }
-    .tag-concluido { background: #dcfce7; color: #166534; }
-    .tag-cancelado { background: #fee2e2; color: #991b1b; }
-
-    .vazio {
-      text-align: center;
-      padding: 3rem 1.5rem;
-      color: #94a3b8;
-      font-size: 1.05rem;
-      font-weight: 500;
-    }
-
-    /* Chat */
-    .caixa-mensagens {
-      height: 420px;
-      overflow-y: auto;
-      padding: 1.2rem;
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-      border-radius: 18px;
-      margin-bottom: 1.2rem;
-      border: 2px solid #e0e7ff;
-    }
-
-    .mensagem {
-      max-width: 85%;
-      padding: 1rem 1.2rem;
-      border-radius: 18px;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-      line-height: 1.5;
-      animation: slideIn 0.3s ease-out;
-      word-wrap: break-word;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    .mensagem.cliente {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 6px;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    }
-
-    .mensagem.loja {
-      background: white;
-      color: #1e293b;
-      border: 2px solid #e0e7ff;
-      margin-right: auto;
-      border-bottom-left-radius: 6px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .mensagem .hora {
-      font-size: 0.75rem;
-      opacity: 0.8;
-      margin-top: 0.4rem;
-      text-align: right;
-      font-weight: 600;
-    }
-
-    .entrada-mensagem {
-      display: flex;
-      gap: 0.7rem;
-    }
-
-    .entrada-mensagem input {
-      flex: 1;
-      margin: 0;
-    }
-
-    .boas-vindas {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 18px;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      border: 1px solid #f1f5f9;
-    }
-
-    .boas-vindas h2 {
-      font-size: 1.2rem;
-      color: #0f172a;
-      font-weight: 800;
-    }
-
-    .boas-vindas p {
-      color: #64748b;
-      font-size: 1rem;
-      margin-top: 0.3rem;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+.toast {
+  position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+  background: white; padding: 1rem 1.5rem; border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 9999; font-weight: 600;
+  border-left: 4px solid #667eea; max-width: 90%; animation: toastIn .3s;
+}
+.toast.error { border-left-color: #ef4444; }
+.toast.success { border-left-color: #10b981; }
+@keyframes toastIn { from { transform: translate(-50%, -100%); opacity: 0; } }
+</style>
 </head>
 <body>
 
 <!-- Tela de Acesso -->
 <div class="tela-acesso" id="telaAcesso">
-  <!-- Formulário de Login -->
-  <div class="caixa-form tela-form" id="formLogin">
+  <div class="caixa-form" id="formLogin">
     <h1>🐾 PetVirtua</h1>
     <p class="slogan">Acesse sua conta e gerencie seus pets</p>
-    <div class="form-grupo">
-      <label>E-mail</label>
-      <input type="email" id="loginEmail" placeholder="seu@email.com" />
-    </div>
-    <div class="form-grupo">
-      <label>Senha</label>
-      <input type="password" id="loginSenha" placeholder="••••••••" />
-    </div>
+    <div class="form-grupo"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" /></div>
+    <div class="form-grupo"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••" /></div>
     <button class="btn" onclick="entrar()">🔑 Entrar</button>
-    <div class="troca-tela" onclick="mostrarCadastro()">
-      Não tem conta? <span>Cadastre-se</span>
-    </div>
+    <div class="troca-tela" onclick="mostrarCadastro()">Não tem conta? <span>Cadastre-se</span></div>
     <div class="erro" id="msgErroLogin">❌ E-mail ou senha incorretos!</div>
   </div>
 
-  <!-- Formulário de Cadastro -->
-  <div class="caixa-form tela-form" id="formCadastro" style="display:none;">
+  <div class="caixa-form" id="formCadastro" style="display:none;">
     <h1>🐾 Cadastrar</h1>
     <p class="slogan">Crie sua conta em segundos</p>
-
+    <div class="info-box">🔑 Peça ao pet shop o <strong>Código de Convite</strong> para vincular sua conta!</div>
+    <div class="form-grupo"><label>Código de Convite *</label><input type="text" id="cadCodigo" placeholder="Ex: PET123456" style="text-transform: uppercase;" /></div>
     <h2>👤 Seus Dados</h2>
-    <div class="form-grupo">
-      <label>Nome Completo *</label>
-      <input type="text" id="cadNome" placeholder="Digite seu nome completo" />
+    <div class="form-grupo"><label>Nome Completo *</label><input type="text" id="cadNome" /></div>
+    <div class="form-grupo"><label>E-mail *</label><input type="email" id="cadEmail" /></div>
+    <div class="form-grupo"><label>Criar Senha *</label><input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" /></div>
+    <div class="form-grupo"><label>Telefone *</label><input type="tel" id="cadTel" placeholder="(XX) XXXXX-XXXX" /></div>
+    <div class="form-grupo"><label>Endereço</label><input type="text" id="cadEnd" /></div>
+    <h2>🐾 Primeiro Pet</h2>
+    <div class="form-grupo"><label>Nome do Pet *</label><input type="text" id="cadPetNome" /></div>
+    <div class="form-grupo"><label>Espécie</label>
+      <select id="cadPetEspecie"><option>Cachorro</option><option>Gato</option><option>Ave</option><option>Roedor</option><option>Outros</option></select>
     </div>
-    <div class="form-grupo">
-      <label>E-mail *</label>
-      <input type="email" id="cadEmail" placeholder="seu@email.com" />
-    </div>
-    <div class="form-grupo">
-      <label>Criar Senha *</label>
-      <input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" />
-    </div>
-    <div class="form-grupo">
-      <label>Telefone / WhatsApp *</label>
-      <input type="tel" id="cadTel" placeholder="(XX) XXXXX-XXXX" />
-    </div>
-    <div class="form-grupo">
-      <label>Endereço Completo</label>
-      <input type="text" id="cadEnd" placeholder="Rua, número, bairro, cidade" />
-    </div>
-
-    <h2>🐾 Dados do Seu Pet</h2>
-    <div class="form-grupo">
-      <label>Nome do Pet *</label>
-      <input type="text" id="cadPetNome" placeholder="Ex: Thor" />
-    </div>
-    <div class="form-grupo">
-      <label>Espécie e Raça</label>
-      <input type="text" id="cadPetRaca" placeholder="Ex: Cão — Poodle" />
-    </div>
-    <div class="form-grupo">
-      <label>Idade, Peso e Porte</label>
-      <input type="text" id="cadPetDados" placeholder="Ex: 5 anos • 8kg • Pequeno" />
-    </div>
-    <div class="form-grupo">
-      <label>Alergias, Restrições ou Cuidados Especiais</label>
-      <textarea id="cadPetObs" rows="2" placeholder="Medicamentos, pele sensível..."></textarea>
-    </div>
-
+    <div class="form-grupo"><label>Raça</label><input type="text" id="cadPetRaca" /></div>
+    <div class="form-grupo"><label>Observações (alergias, cuidados)</label><textarea id="cadPetObs" rows="2"></textarea></div>
     <button class="btn" onclick="cadastrar()">✅ Criar Conta</button>
-    <div class="troca-tela" onclick="mostrarLogin()">
-      Já tem conta? <span>Entrar</span>
-    </div>
-    <div class="erro" id="msgErroCadastro">❌ Preencha todos os campos obrigatórios!</div>
+    <div class="troca-tela" onclick="mostrarLogin()">Já tem conta? <span>Entrar</span></div>
+    <div class="erro" id="msgErroCadastro"></div>
     <div class="sucesso" id="msgSucessoCadastro">✅ Conta criada! Entrando...</div>
   </div>
 </div>
@@ -527,422 +193,421 @@
 <!-- Tela Principal -->
 <div class="tela-principal" id="telaPrincipal">
   <header>
-    <h1>🐾 Área do Cliente</h1>
+    <h1>🐾 <span id="lojaNome">Pet Shop</span></h1>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </header>
   <div class="container">
-    <div class="boas-vindas">
-      <h2>Bem-vindo(a), <span id="nomeUsuario">Cliente</span>! 👋</h2>
-      <p>Acesse tudo abaixo: agende, veja seus pets e converse conosco.</p>
+    <div class="cartao">
+      <h2>Olá, <span id="nomeUsuario">Cliente</span>! 👋</h2>
+      <p style="color:#64748b;">Acesse tudo abaixo: agende, veja seus pets e converse conosco.</p>
     </div>
 
-    <!-- Aba Agendamento -->
     <div class="aba ativa" id="abaAgendar">
       <div class="cartao">
         <h2>📅 Agendar Serviço</h2>
-        <div class="form-grupo">
-          <label>Selecione seu Pet</label>
-          <select id="petAgendado"><option value="">— Selecione —</option></select>
-        </div>
-        <div class="form-grupo">
-          <label>Tipo de Serviço</label>
-          <select id="servicoAgendar">
-            <option>Banho</option>
-            <option>Banho e Tosa</option>
-            <option>Tosa Estética</option>
-            <option>Hidratação</option>
-            <option>Consulta Veterinária</option>
-            <option>Outro</option>
-          </select>
-        </div>
-        <div class="form-grupo">
-          <label>Data e Horário Desejado</label>
-          <input type="datetime-local" id="dataAgendar" />
-        </div>
-        <div class="form-grupo">
-          <label>Observações Adicionais</label>
-          <textarea id="obsAgendar" rows="3" placeholder="Algo que precisamos saber?"></textarea>
-        </div>
+        <div class="form-grupo"><label>Seu Pet</label><select id="petAgendado"><option value="">— Selecione —</option></select></div>
+        <div class="form-grupo"><label>Serviço</label><select id="servicoAgendar"></select></div>
+        <div class="form-grupo"><label>Data e Horário</label><input type="datetime-local" id="dataAgendar" /></div>
+        <div class="form-grupo"><label>Observações</label><textarea id="obsAgendar" rows="3"></textarea></div>
         <button class="btn-acao" onclick="agendar()">📅 Solicitar Agendamento</button>
       </div>
     </div>
 
-    <!-- Aba Meus Pets -->
     <div class="aba" id="abaPets">
       <div class="cartao">
         <h2>🐾 Adicionar Pet</h2>
-        <div class="form-grupo"><label>Nome do Pet</label><input type="text" id="petNome" placeholder="Ex: Thor" /></div>
-        <div class="form-grupo"><label>Espécie / Raça</label><input type="text" id="petRaca" placeholder="Ex: Cão — Poodle" /></div>
-        <div class="form-grupo"><label>Idade / Peso / Porte</label><input type="text" id="petDados" placeholder="Ex: 5 anos • 8kg • Pequeno" /></div>
-        <div class="form-grupo"><label>Alergias e Cuidados Especiais</label><textarea id="petObs" rows="3" placeholder="Medicamentos, pele sensível..."></textarea></div>
+        <div class="form-grupo"><label>Nome</label><input type="text" id="petNome" /></div>
+        <div class="form-grupo"><label>Espécie</label>
+          <select id="petEspecie"><option>Cachorro</option><option>Gato</option><option>Ave</option><option>Roedor</option><option>Outros</option></select>
+        </div>
+        <div class="form-grupo"><label>Raça</label><input type="text" id="petRaca" /></div>
+        <div class="form-grupo"><label>Observações</label><textarea id="petObs" rows="3"></textarea></div>
         <button class="btn-acao" onclick="cadastrarPet()">➕ Adicionar Pet</button>
       </div>
       <div class="cartao">
-        <h2>📋 Pets Cadastrados</h2>
-        <div id="listaPets"><div class="vazio">Nenhum pet cadastrado.</div></div>
+        <h2>📋 Meus Pets</h2>
+        <div id="listaPets"><div class="vazio">Carregando...</div></div>
       </div>
     </div>
 
-    <!-- Aba Minha Agenda -->
     <div class="aba" id="abaAgenda">
       <div class="cartao">
         <h2>📋 Meus Agendamentos</h2>
-        <div id="listaMeusAgendamentos"><div class="vazio">Nenhum agendamento solicitado.</div></div>
+        <div id="listaMeusAgendamentos"><div class="vazio">Carregando...</div></div>
       </div>
     </div>
 
-    <!-- Aba Mensagens -->
     <div class="aba" id="abaChat">
       <div class="cartao">
-        <h2>💬 Conversar com o Pet Shop</h2>
-        <div class="caixa-mensagens" id="caixaMensagens">
-          <div class="mensagem loja">
-            Olá! 😊 Em que podemos ajudar?<br>Estamos prontos para atendê-lo!
-            <div class="hora">Pet Shop</div>
-          </div>
-        </div>
+        <h2>💬 Conversa com o Pet Shop</h2>
+        <div class="caixa-mensagens" id="caixaMensagens"></div>
+        <div id="digitando"></div>
         <div class="entrada-mensagem">
           <input type="text" id="textoMensagem" placeholder="Digite sua mensagem..." />
-          <button class="btn-acao btn-sucesso" onclick="enviarMensagem()" style="width: auto; padding: 0.85rem 1.5rem;">➤</button>
+          <button class="btn-acao btn-sucesso" onclick="enviarMensagem()" style="width:auto;padding:.85rem 1.5rem;">➤</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Navegação Inferior -->
   <nav class="navegacao">
-    <button class="nav-btn ativo" onclick="irPara('Agendar', this)"><span>📅</span> Agendar</button>
-    <button class="nav-btn" onclick="irPara('Pets', this)"><span>🐾</span> Meus Pets</button>
-    <button class="nav-btn" onclick="irPara('Agenda', this)"><span>📋</span> Minha Agenda</button>
-    <button class="nav-btn" onclick="irPara('Chat', this)"><span>💬</span> Mensagens</button>
+    <button class="nav-btn ativo" onclick="irPara('Agendar', this)"><span>📅</span>Agendar</button>
+    <button class="nav-btn" onclick="irPara('Pets', this)"><span>🐾</span>Meus Pets</button>
+    <button class="nav-btn" onclick="irPara('Agenda', this)"><span>📋</span>Agenda</button>
+    <button class="nav-btn" onclick="irPara('Chat', this)"><span>💬</span>Chat<span class="badge-notif" id="badgeChat" style="display:none;">0</span></button>
   </nav>
 </div>
 
 <script>
-let clienteLogado = null;
+let cliente = null;
+let loja = null;
+let conversaId = null;
 let channelChat = null;
+let channelConv = null;
 
-// Alternar telas
-function mostrarCadastro() {
-  document.getElementById("formLogin").style.display = "none";
-  document.getElementById("formCadastro").style.display = "block";
-  document.getElementById("msgErroLogin").style.display = "none";
+function toast(msg, tipo='info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
-function mostrarLogin() {
-  document.getElementById("formCadastro").style.display = "none";
-  document.getElementById("formLogin").style.display = "block";
-  document.getElementById("msgErroCadastro").style.display = "none";
-}
+function mostrarCadastro() { document.getElementById('formLogin').style.display='none'; document.getElementById('formCadastro').style.display='block'; }
+function mostrarLogin() { document.getElementById('formCadastro').style.display='none'; document.getElementById('formLogin').style.display='block'; }
 
-// Cadastrar Novo Cliente
 async function cadastrar() {
-  const nome = document.getElementById("cadNome").value.trim();
-  const email = document.getElementById("cadEmail").value.trim().toLowerCase();
-  const senha = document.getElementById("cadSenha").value;
-  let telefone = document.getElementById("cadTel").value.trim().replace(/\D/g, "");
-  const endereco = document.getElementById("cadEnd").value.trim();
-  const petNome = document.getElementById("cadPetNome").value.trim();
-  const petRaca = document.getElementById("cadPetRaca").value.trim();
-  const petDados = document.getElementById("cadPetDados").value.trim();
-  const petObs = document.getElementById("cadPetObs").value.trim();
+  const codigo = document.getElementById('cadCodigo').value.trim().toUpperCase();
+  const nome = document.getElementById('cadNome').value.trim();
+  const email = document.getElementById('cadEmail').value.trim().toLowerCase();
+  const senha = document.getElementById('cadSenha').value;
+  const tel = document.getElementById('cadTel').value.trim();
+  const endereco = document.getElementById('cadEnd').value.trim();
+  const petNome = document.getElementById('cadPetNome').value.trim();
+  const petEsp = document.getElementById('cadPetEspecie').value;
+  const petRaca = document.getElementById('cadPetRaca').value.trim();
+  const petObs = document.getElementById('cadPetObs').value.trim();
+  const err = document.getElementById('msgErroCadastro');
 
-  if (!nome || !email || senha.length < 6 || telefone.length < 10 || !petNome) {
-    document.getElementById("msgErroCadastro").style.display = "block";
-    setTimeout(() => document.getElementById("msgErroCadastro").style.display = "none", 4000);
+  err.style.display = 'none';
+  if (!codigo || !nome || !email || senha.length < 6 || !petNome) {
+    err.textContent = '❌ Preencha todos os campos obrigatórios!';
+    err.style.display = 'block';
     return;
   }
 
-  // Criar usuário no Supabase Auth
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password: senha,
-    options: {
-      data: { nome, telefone, endereco }
-    }
+  // Busca loja pelo código de convite
+  const { data: lojaEncontrada, error: errLoja } = await supabase
+    .from('petshops').select('*').eq('codigo_convite', codigo).maybeSingle();
+
+  if (!lojaEncontrada) {
+    err.textContent = '❌ Código de convite inválido! Verifique com o pet shop.';
+    err.style.display = 'block';
+    return;
+  }
+
+  // Cria usuário
+  const { data: auth, error: authErr } = await supabase.auth.signUp({
+    email, password: senha,
+    options: { data: { nome, telefone: tel, tipo: 'cliente' } }
   });
+  if (authErr) { err.textContent = '❌ ' + authErr.message; err.style.display = 'block'; return; }
 
-  if (error) {
-    alert("Erro ao cadastrar: " + error.message);
-    return;
-  }
+  // Cria cliente vinculado à loja
+  const { data: cli, error: cliErr } = await supabase.from('clientes').insert([{
+    loja_id: lojaEncontrada.id, nome, email, telefone: tel, endereco
+  }]).select().single();
+  if (cliErr) { err.textContent = '❌ Erro ao criar cadastro: ' + cliErr.message; err.style.display = 'block'; return; }
 
-  // Inserir primeiro pet
-  const { data: petData } = await supabase.from("pets").insert([{
-    cliente_id: data.user.id,
-    nome: petNome,
-    especie_raca: petRaca,
-    idade_peso_porte: petDados,
-    alergias_cuidados: petObs
+  // Cria primeiro pet
+  await supabase.from('pets').insert([{
+    loja_id: lojaEncontrada.id, cliente_id: cli.id,
+    nome: petNome, especie: petEsp, raca: petRaca, observacoes: petObs
   }]);
 
-  document.getElementById("msgSucessoCadastro").style.display = "block";
+  document.getElementById('msgSucessoCadastro').style.display = 'block';
   setTimeout(() => {
-    clienteLogado = { id: data.user.id, nome };
+    cliente = cli;
+    loja = lojaEncontrada;
     entrarArea();
   }, 1500);
 }
 
-// Entrar com E-mail e Senha
 async function entrar() {
-  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-  const senha = document.getElementById("loginSenha").value;
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const senha = document.getElementById('loginSenha').value;
+  const err = document.getElementById('msgErroLogin');
+  err.style.display = 'none';
 
-  if (!email || !senha) {
-    document.getElementById("msgErroLogin").style.display = "block";
-    return;
-  }
+  if (!email || !senha) { err.style.display = 'block'; return; }
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: senha
-  });
+  const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if (authErr || !auth.user) { err.style.display = 'block'; return; }
 
-  if (error || !data.user) {
-    document.getElementById("msgErroLogin").style.display = "block";
-    return;
-  }
+  // Busca cliente pelo email
+  const { data: cli } = await supabase.from('clientes').select('*, petshops(*)').eq('email', email).maybeSingle();
+  if (!cli) { err.textContent = '❌ Conta não encontrada nesta loja'; err.style.display = 'block'; return; }
 
-  // Buscar dados do perfil
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single();
-
-  clienteLogado = { ...data.user, ...profile };
+  cliente = cli;
+  loja = cli.petshops;
   entrarArea();
 }
 
-// Entrar na Área Principal
-function entrarArea() {
-  document.getElementById("telaAcesso").style.display = "none";
-  document.getElementById("telaPrincipal").style.display = "block";
-  document.getElementById("nomeUsuario").textContent = clienteLogado.nome || "Cliente";
-  carregarTudo();
-  iniciarChat();
+async function entrarArea() {
+  document.getElementById('telaAcesso').style.display = 'none';
+  document.getElementById('telaPrincipal').style.display = 'block';
+  document.getElementById('nomeUsuario').textContent = cliente.nome.split(' ')[0];
+  document.getElementById('lojaNome').textContent = loja.loja_nome || 'Pet Shop';
+  await carregarTudo();
+  iniciarRealtime();
 }
 
-// Sair
 async function sair() {
+  if (channelChat) supabase.removeChannel(channelChat);
+  if (channelConv) supabase.removeChannel(channelConv);
   await supabase.auth.signOut();
-  if (channelChat) {
-    supabase.removeChannel(channelChat);
-    channelChat = null;
-  }
-  clienteLogado = null;
-  document.getElementById("telaPrincipal").style.display = "none";
-  document.getElementById("telaAcesso").style.display = "flex";
-  document.getElementById("loginEmail").value = "";
-  document.getElementById("loginSenha").value = "";
-  document.getElementById("cadNome").value = "";
-  document.getElementById("cadEmail").value = "";
-  document.getElementById("cadSenha").value = "";
-  document.getElementById("cadTel").value = "";
-  document.getElementById("cadEnd").value = "";
-  document.getElementById("cadPetNome").value = "";
-  document.getElementById("cadPetRaca").value = "";
-  document.getElementById("cadPetDados").value = "";
-  document.getElementById("cadPetObs").value = "";
+  cliente = null; loja = null; conversaId = null;
+  document.getElementById('telaPrincipal').style.display = 'none';
+  document.getElementById('telaAcesso').style.display = 'flex';
   mostrarLogin();
 }
 
-// Navegação entre abas
 function irPara(nome, btn) {
-  document.querySelectorAll(".aba").forEach(a => a.classList.remove("ativa"));
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("ativo"));
-  document.getElementById(`aba${nome}`).classList.add("ativa");
-  btn.classList.add("ativo");
-  if (nome === "Agenda") carregarMeusAgendamentos();
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('ativo'));
+  document.getElementById(`aba${nome}`).classList.add('ativa');
+  btn.classList.add('ativo');
+  if (nome === 'Agenda') carregarMeusAgendamentos();
+  if (nome === 'Chat') {
+    document.getElementById('badgeChat').style.display = 'none';
+    marcarComoLido();
+  }
 }
 
-// Adicionar mais Pets
 async function cadastrarPet() {
-  const nome = document.getElementById("petNome").value.trim();
-  const raca = document.getElementById("petRaca").value.trim();
-  const dados = document.getElementById("petDados").value.trim();
-  const obs = document.getElementById("petObs").value.trim();
-  
-  if (!nome) return alert("Informe o nome do pet!");
-
-  const { error } = await supabase.from("pets").insert([{
-    cliente_id: clienteLogado.id,
-    nome,
-    especie_raca: raca,
-    idade_peso_porte: dados,
-    alergias_cuidados: obs
+  const nome = document.getElementById('petNome').value.trim();
+  if (!nome) return toast('Informe o nome!', 'error');
+  const { error } = await supabase.from('pets').insert([{
+    loja_id: loja.id, cliente_id: cliente.id, nome,
+    especie: document.getElementById('petEspecie').value,
+    raca: document.getElementById('petRaca').value.trim(),
+    observacoes: document.getElementById('petObs').value.trim()
   }]);
-
-  if (error) return alert("Erro ao cadastrar: " + error.message);
-
-  document.getElementById("petNome").value = "";
-  document.getElementById("petRaca").value = "";
-  document.getElementById("petDados").value = "";
-  document.getElementById("petObs").value = "";
-
+  if (error) return toast('Erro: ' + error.message, 'error');
+  document.getElementById('petNome').value = '';
+  document.getElementById('petRaca').value = '';
+  document.getElementById('petObs').value = '';
   carregarPets();
-  alert("✅ Pet cadastrado com sucesso!");
+  toast('Pet adicionado!', 'success');
 }
 
-function carregarPets() {
-  const lista = document.getElementById("listaPets");
-  const select = document.getElementById("petAgendado");
-  
-  supabase
-    .from("pets")
-    .select("*")
-    .eq("cliente_id", clienteLogado.id)
-    .then(({ data }) => {
-      select.innerHTML = `<option value="">— Selecione seu Pet —</option>`;
-      
-      if (!data || data.length === 0) {
-        lista.innerHTML = `<div class="vazio">Nenhum pet cadastrado ainda.</div>`;
-        return;
-      }
-
-      lista.innerHTML = data.map((p, i) => {
-        select.innerHTML += `<option value="${p.nome}">${p.nome} — ${p.especie_raca || "Raça não informada"}</option>`;
-        return `<div class="item">
-          <h3>🐾 ${p.nome}</h3>
-          <p>${p.especie_raca || ""}${p.idade_peso_porte ? ` • ${p.idade_peso_porte}` : ""}</p>
-          ${p.alergias_cuidados ? `<p><strong>Cuidados:</strong> ${p.alergias_cuidados}</p>` : ""}
-        </div>`;
-      }).join("");
-    });
+async function carregarPets() {
+  const { data } = await supabase.from('pets').select('*').eq('cliente_id', cliente.id);
+  const lista = document.getElementById('listaPets');
+  const select = document.getElementById('petAgendado');
+  select.innerHTML = '<option value="">— Selecione —</option>';
+  if (!data || !data.length) {
+    lista.innerHTML = '<div class="vazio">Nenhum pet cadastrado ainda.</div>';
+    return;
+  }
+  lista.innerHTML = data.map(p => `
+    <div class="item">
+      <h3>🐾 ${p.nome}</h3>
+      <p>${p.especie || ''} ${p.raca ? '— ' + p.raca : ''}</p>
+      ${p.observacoes ? `<p><strong>Cuidados:</strong> ${p.observacoes}</p>` : ''}
+    </div>
+  `).join('');
+  data.forEach(p => {
+    select.innerHTML += `<option value="${p.id}">${p.nome} (${p.especie || ''})</option>`;
+  });
 }
 
-// Agendar
+async function carregarServicos() {
+  const { data } = await supabase.from('servicos').select('*').eq('loja_id', loja.id).order('nome');
+  const sel = document.getElementById('servicoAgendar');
+  if (!data || !data.length) {
+    sel.innerHTML = '<option>— Sem serviços disponíveis —</option>';
+    return;
+  }
+  sel.innerHTML = data.map(s => `<option value="${s.id}">${s.nome} — R$ ${s.preco || 0}</option>`).join('');
+}
+
 async function agendar() {
-  const pet = document.getElementById("petAgendado").value;
-  const servico = document.getElementById("servicoAgendar").value;
-  const data = document.getElementById("dataAgendar").value;
-  const obs = document.getElementById("obsAgendar").value.trim();
-
-  if (!pet || !data) return alert("⚠️ Selecione o pet e a data!");
-
-  const { error } = await supabase.from("agendamentos").insert([{
-    cliente_id: clienteLogado.id,
-    pet_nome: pet + (obs ? ` | ${obs}` : ""),
-    servico,
-    data,
-    status: "Agendado"
+  const petId = document.getElementById('petAgendado').value;
+  const srvId = document.getElementById('servicoAgendar').value;
+  const data = document.getElementById('dataAgendar').value;
+  const obs = document.getElementById('obsAgendar').value.trim();
+  if (!petId || !data) return toast('Selecione pet e data!', 'error');
+  const { error } = await supabase.from('agendamentos').insert([{
+    loja_id: loja.id, pet_id: petId, servico_id: srvId,
+    data_hora: data, status: 'agendado', observacoes: obs,
+    valor: 0
   }]);
-
-  if (error) return alert("Erro ao solicitar: " + error.message);
-
-  alert("✅ Solicitação enviada! Aguarde nossa confirmação.");
-  document.getElementById("dataAgendar").value = "";
-  document.getElementById("obsAgendar").value = "";
+  if (error) return toast('Erro: ' + error.message, 'error');
+  toast('Agendamento solicitado!', 'success');
+  document.getElementById('dataAgendar').value = '';
+  document.getElementById('obsAgendar').value = '';
   carregarMeusAgendamentos();
 }
 
-// Meus Agendamentos
 async function carregarMeusAgendamentos() {
-  const { data } = await supabase
-    .from("agendamentos")
-    .select("*")
-    .eq("cliente_id", clienteLogado.id)
-    .order("data", { asc: false });
-
-  const el = document.getElementById("listaMeusAgendamentos");
-  
-  if (!data || data.length === 0) {
-    el.innerHTML = `<div class="vazio">Nenhum agendamento solicitado.</div>`;
+  const petsIds = [];
+  const { data: pets } = await supabase.from('pets').select('id').eq('cliente_id', cliente.id);
+  if (pets) pets.forEach(p => petsIds.push(p.id));
+  if (!petsIds.length) {
+    document.getElementById('listaMeusAgendamentos').innerHTML = '<div class="vazio">Cadastre um pet primeiro.</div>';
     return;
   }
+  const { data } = await supabase.from('agendamentos')
+    .select('*, pets(nome), servicos(nome)')
+    .in('pet_id', petsIds)
+    .order('data_hora', { ascending: false });
+
+  const el = document.getElementById('listaMeusAgendamentos');
+  if (!data || !data.length) { el.innerHTML = '<div class="vazio">Nenhum agendamento.</div>'; return; }
 
   el.innerHTML = data.map(a => {
-    let tagClass = a.status === "Concluído" ? "tag-concluido" : a.status === "Cancelado" ? "tag-cancelado" : "tag-agendado";
+    const cls = { agendado:'tag-agendado', em_andamento:'tag-em_andamento', concluido:'tag-concluido', cancelado:'tag-cancelado' }[a.status] || 'tag-agendado';
     return `<div class="item">
-      <h3>${a.servico}</h3>
-      <p><strong>Pet:</strong> ${a.pet_nome}</p>
-      <p><strong>Data:</strong> ${new Date(a.data).toLocaleString("pt-BR")}</p>
-      <span class="tag ${tagClass}">${a.status}</span>
+      <h3>${a.servicos?.nome || 'Serviço'}</h3>
+      <p><strong>Pet:</strong> ${a.pets?.nome || '—'}</p>
+      <p><strong>Data:</strong> ${new Date(a.data_hora).toLocaleString('pt-BR')}</p>
+      <span class="tag ${cls}">${a.status}</span>
     </div>`;
-  }).join("");
+  }).join('');
 }
 
-// Chat em Tempo Real
-function iniciarChat() {
-  // Inscrever no canal de mensagens do cliente
-  channelChat = supabase
-    .channel(`chat-${clienteLogado.id}`)
-    .on('postgres_changes', 
-      { event: 'INSERT', schema: 'public', table: 'mensagens', filter: `cliente_id=eq.${clienteLogado.id}` },
+// ========== CHAT EM TEMPO REAL ==========
+async function iniciarChat() {
+  // Obtém ou cria conversa
+  const { data: convs } = await supabase.from('conversas')
+    .select('*').eq('loja_id', loja.id).eq('cliente_id', cliente.id).maybeSingle();
+  
+  if (convs) {
+    conversaId = convs.id;
+  } else {
+    const { data: nova } = await supabase.from('conversas').insert([{
+      loja_id: loja.id, cliente_id: cliente.id
+    }]).select().single();
+    conversaId = nova.id;
+  }
+
+  await carregarMensagens();
+}
+
+async function carregarMensagens() {
+  const { data } = await supabase.from('mensagens')
+    .select('*').eq('conversa_id', conversaId).order('created_at', { ascending: true });
+
+  const el = document.getElementById('caixaMensagens');
+  el.innerHTML = `<div class="mensagem loja">
+    <div class="autor">🏪 ${loja.loja_nome || 'Pet Shop'}</div>
+    Olá ${cliente.nome.split(' ')[0]}! 😊 Em que podemos ajudar?
+    <div class="hora">Sistema</div>
+  </div>`;
+
+  if (data && data.length > 0) {
+    el.innerHTML += data.map(m => renderMensagem(m)).join('');
+  }
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderMensagem(m) {
+  const tipo = m.remetente_tipo === 'cliente' ? 'cliente' : 'loja';
+  const autor = m.remetente_tipo === 'cliente' 
+    ? '👤 Você' 
+    : `🏪 ${m.remetente_nome || loja.loja_nome}`;
+  const hora = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  return `<div class="mensagem ${tipo}">
+    <div class="autor">${autor}</div>
+    ${m.texto.replace(/\n/g, '<br>')}
+    <div class="hora">${hora}</div>
+  </div>`;
+}
+
+async function enviarMensagem() {
+  const input = document.getElementById('textoMensagem');
+  const texto = input.value.trim();
+  if (!texto || !conversaId) return;
+
+  input.value = '';
+  const { error } = await supabase.from('mensagens').insert([{
+    conversa_id: conversaId, loja_id: loja.id, cliente_id: cliente.id,
+    remetente_tipo: 'cliente', remetente_nome: cliente.nome,
+    texto, lido_cliente: true
+  }]);
+  if (error) toast('Erro ao enviar: ' + error.message, 'error');
+}
+
+async function marcarComoLido() {
+  if (!conversaId) return;
+  await supabase.from('mensagens')
+    .update({ lido_cliente: true })
+    .eq('conversa_id', conversaId)
+    .eq('remetente_tipo', 'loja')
+    .eq('lido_cliente', false);
+  await supabase.from('conversas').update({ nao_lidas_cliente: 0 }).eq('id', conversaId);
+}
+
+function iniciarRealtime() {
+  // Canal de mensagens
+  channelChat = supabase.channel(`chat-cliente-${cliente.id}`)
+    .on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'mensagens' },
       (payload) => {
-        adicionarMensagemNaTela(payload.new);
+        const m = payload.new;
+        if (m.conversa_id === conversaId && m.remetente_tipo !== 'cliente') {
+          document.getElementById('caixaMensagens').innerHTML += renderMensagem(m);
+          document.getElementById('caixaMensagens').scrollTop = document.getElementById('caixaMensagens').scrollHeight;
+          const aba = document.getElementById('abaChat');
+          if (!aba.classList.contains('ativa')) {
+            const badge = document.getElementById('badgeChat');
+            badge.style.display = 'inline-block';
+            badge.textContent = '!';
+          } else {
+            marcarComoLido();
+          }
+        }
       }
     )
     .subscribe();
 
-  carregarMensagens();
-}
-
-async function enviarMensagem() {
-  const texto = document.getElementById("textoMensagem").value.trim();
-  if (!texto) return;
-
-  await supabase.from("mensagens").insert([{
-    cliente_id: clienteLogado.id,
-    cliente_nome: clienteLogado.nome,
-    remetente: "cliente",
-    texto
-  }]);
-
-  document.getElementById("textoMensagem").value = "";
-}
-
-async function carregarMensagens() {
-  const { data } = await supabase
-    .from("mensagens")
-    .select("*")
-    .eq("cliente_id", clienteLogado.id)
-    .order("data", { asc: true });
-
-  const el = document.getElementById("caixaMensagens");
-  el.innerHTML = `<div class="mensagem loja">
-    Olá! 😊 Em que podemos ajudar?<br>Estamos prontos para atendê-lo!
-    <div class="hora">Pet Shop</div>
-  </div>`;
-
-  if (data && data.length > 0) {
-    el.innerHTML += data.map(m => `<div class="mensagem ${m.remetente === 'cliente' ? 'cliente' : 'loja'}">
-      ${m.texto.replace(/\n/g, "<br>")}
-      <div class="hora">${m.remetente === 'cliente' ? clienteLogado.nome : 'Pet Shop'} • ${new Date(m.data).toLocaleString("pt-BR")}</div>
-    </div>`).join("");
-  }
-
-  el.scrollTop = el.scrollHeight;
-}
-
-function adicionarMensagemNaTela(m) {
-  const el = document.getElementById("caixaMensagens");
-  el.innerHTML += `<div class="mensagem ${m.remetente === 'cliente' ? 'cliente' : 'loja'}">
-    ${m.texto.replace(/\n/g, "<br>")}
-    <div class="hora">${m.remetente === 'cliente' ? clienteLogado.nome : 'Pet Shop'} • ${new Date(m.data).toLocaleString("pt-BR")}</div>
-  </div>`;
-  el.scrollTop = el.scrollHeight;
+  // Canal de conversas (para ver novas conversas)
+  channelConv = supabase.channel(`conv-cliente-${cliente.id}`)
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'conversas' },
+      (payload) => {
+        if (payload.new && payload.new.cliente_id === cliente.id && !conversaId) {
+          conversaId = payload.new.id;
+          carregarMensagens();
+        }
+      }
+    )
+    .subscribe();
 }
 
 async function carregarTudo() {
-  carregarPets();
-  carregarMeusAgendamentos();
+  await carregarPets();
+  await carregarServicos();
+  await carregarMeusAgendamentos();
+  await iniciarChat();
 }
 
-// Enter para entrar e enviar mensagem
-document.getElementById("loginEmail").addEventListener("keypress", e => { if(e.key==="Enter") entrar(); });
-document.getElementById("loginSenha").addEventListener("keypress", e => { if(e.key==="Enter") entrar(); });
-document.getElementById("textoMensagem").addEventListener("keypress", e => { if(e.key==="Enter") enviarMensagem(); });
+document.getElementById('loginSenha').addEventListener('keypress', e => e.key === 'Enter' && entrar());
+document.getElementById('textoMensagem').addEventListener('keypress', e => e.key === 'Enter' && enviarMensagem());
 
-// Verificar se já está logado
-supabase.auth.getSession().then(({ data: { session } }) => {
+// Auto-login
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    supabase.from("profiles").select("*").eq("id", session.user.id).single().then(({ data: profile }) => {
-      clienteLogado = { ...session.user, ...profile };
+    const { data: cli } = await supabase.from('clientes')
+      .select('*, petshops(*)').eq('email', session.user.email).maybeSingle();
+    if (cli) {
+      cliente = cli; loja = cli.petshops;
       entrarArea();
-    });
+    }
   }
-});
+})();
 </script>
 </body>
 </html>
