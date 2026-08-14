@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PetVirtua — Gestão de Pet Shop</title>
+  <title>PetVirtua — Acesso Pet Shop</title>
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
     window.supabase = createClient(
@@ -13,566 +13,310 @@
   </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
-    body { background: #f1f5f9; color: #1e293b; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
 
-    .tela-principal { min-height: 100vh; }
+    .tela-acesso { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem 1rem; }
 
-    header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1.3rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.3);
-      position: sticky; top: 0; z-index: 200;
+    .caixa-acesso {
+      background: rgba(255,255,255,.98); backdrop-filter: blur(20px);
+      padding: 2.2rem 1.8rem; border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,.3);
+      width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,.25);
     }
+    .caixa-acesso.larga { max-width: 720px; }
 
-    header h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.3px; }
-
-    .btn-sair {
-      background: rgba(255,255,255,.25); border: none; color: white;
-      padding: .6rem 1.3rem; border-radius: 12px; cursor: pointer;
-      font-weight: 600; transition: all .3s;
-    }
-    .btn-sair:hover { background: rgba(255,255,255,.35); transform: translateY(-1px); }
-
-    .container { padding: 2rem 1.2rem; max-width: 1400px; margin: 0 auto; }
-
-    .boas-vindas {
-      background: white; padding: 2rem; border-radius: 20px; margin-bottom: 2rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 1px solid #f1f5f9;
-    }
-    .boas-vindas h2 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: .5rem; }
-    .boas-vindas p { color: #64748b; font-size: 1.05rem; line-height: 1.5; }
-
-    .resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 1.2rem; margin-bottom: 2rem; }
-    .card-resumo {
-      background: white; padding: 1.5rem; border-radius: 18px; text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 1px solid #f1f5f9; transition: all .3s;
-    }
-    .card-resumo:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
-    .card-resumo .numero {
-      font-size: 2rem; font-weight: 900;
+    .caixa-acesso h1 {
       background: linear-gradient(135deg,#667eea,#764ba2);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: .4rem;
     }
-    .card-resumo .rotulo { font-size: .85rem; color: #64748b; margin-top: .3rem; font-weight: 600; }
+    .slogan { text-align: center; color: #64748b; font-size: .95rem; margin-bottom: 1.8rem; font-weight: 500; }
 
-    .grade-modulos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.5rem; }
-    .modulo {
-      background: white; padding: 1.8rem; border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.06); cursor: pointer;
-      transition: all .3s; border: 2px solid transparent;
-    }
-    .modulo:hover { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(0,0,0,.12); border-color: #667eea; }
-    .modulo h3 { margin-bottom: .6rem; color: #0f172a; font-size: 1.15rem; font-weight: 800; }
-    .modulo p { font-size: .9rem; color: #64748b; line-height: 1.5; }
-
-    .painel {
-      display: none; margin-top: 2rem; background: white; padding: 2rem 1.4rem;
-      border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,.06); border: 1px solid #f1f5f9;
-    }
-    .painel.ativo { display: block; animation: fadeIn .3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .painel h2 {
-      margin-bottom: 1.5rem; color: #0f172a; border-bottom: 3px solid #667eea;
-      padding-bottom: .8rem; font-size: 1.5rem; font-weight: 800;
+    .aviso-admin {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border: 2px solid #f59e0b;
+      border-radius: 12px;
+      padding: .7rem 1rem;
+      font-size: .85rem;
+      color: #92400e;
+      margin-bottom: 1.2rem;
+      font-weight: 700;
+      text-align: center;
     }
 
-    .btn-voltar {
-      margin-bottom: 1.5rem; background: linear-gradient(135deg,#f1f5f9,#e2e8f0);
-      border: none; padding: .7rem 1.4rem; border-radius: 12px; cursor: pointer;
-      font-weight: 700; transition: all .3s; font-size: .95rem;
-    }
-    .btn-voltar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,.1); }
+    .secao { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 1.6rem 0 .9rem; padding-bottom: .5rem; border-bottom: 2px solid #e0e7ff; }
+    .secao:first-of-type { margin-top: 0; }
 
-    .form-grupo { margin-bottom: 1.1rem; }
-    label { display: block; margin-bottom: .4rem; font-weight: 700; font-size: .9rem; color: #475569; }
-
-    .painel input, .painel select, .painel textarea {
-      width: 100%; padding: .85rem; border: 2px solid #e2e8f0; border-radius: 12px;
-      font-size: .95rem; transition: all .3s; background: #fafafa;
-    }
-    .painel input:focus, .painel select:focus, .painel textarea:focus {
-      outline: none; border-color: #667eea; background: white;
-      box-shadow: 0 0 0 4px rgba(102,126,234,.1);
+    .info-box {
+      background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 2px solid #bae6fd;
+      border-radius: 12px; padding: .8rem 1rem; font-size: .85rem; color: #0369a1; margin-bottom: 1.1rem; line-height: 1.5;
     }
 
-    .btn {
-      padding: .8rem 1.5rem; border: none; border-radius: 12px; font-weight: 700;
-      cursor: pointer; margin-right: .5rem; transition: all .3s; font-size: .95rem;
+    .campo { margin-bottom: .9rem; }
+    .campo label { display: block; font-size: .85rem; font-weight: 700; color: #475569; margin-bottom: .35rem; }
+    .campo label .ob { color: #ef4444; }
+
+    input, select, textarea {
+      width: 100%; padding: .85rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px;
+      font-size: 1rem; background: #fafafa; transition: all .3s;
     }
-    .btn-primario { background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
-    .btn-sucesso { background: linear-gradient(135deg,#10b981,#059669); color: white; }
-    .btn:hover { transform: translateY(-2px); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 4px rgba(102,126,234,.12); }
+    textarea { resize: vertical; min-height: 70px; }
 
-    .lista { margin-top: 1.5rem; }
-    .item-lista {
-      padding: 1.1rem; background: linear-gradient(135deg,#fafafa,#f8fafc);
-      border-radius: 14px; margin-bottom: .8rem; transition: all .3s; border: 1px solid #e2e8f0;
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .full { grid-column: 1 / -1; }
+    @media (max-width: 620px) { .grid-2 { grid-template-columns: 1fr; } .caixa-acesso { padding: 1.8rem 1.2rem; } }
+
+    .status-cep { font-size: .8rem; color: #667eea; font-weight: 600; margin-top: .3rem; min-height: 1rem; display: block; }
+
+    .btn-acesso {
+      width: 100%; padding: 1rem; background: linear-gradient(135deg,#667eea,#764ba2);
+      color: white; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800;
+      cursor: pointer; transition: all .3s; box-shadow: 0 10px 25px -5px rgba(102,126,234,.45); margin-top: .5rem;
     }
-    .item-lista:hover { transform: translateX(4px); box-shadow: 0 4px 15px rgba(0,0,0,.06); }
+    .btn-acesso:hover { transform: translateY(-2px); box-shadow: 0 15px 35px -5px rgba(102,126,234,.55); }
+    .btn-acesso:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-    .tag { display: inline-block; padding: .25rem .6rem; border-radius: 8px; font-size: .8rem; font-weight: 700; margin-left: .4rem; }
-    .tag-agendado { background: #dbeafe; color: #1e40af; }
-    .tag-concluido { background: #dcfce7; color: #166534; }
-    .tag-cancelado { background: #fee2e2; color: #991b1b; }
+    .erro, .sucesso { display: none; margin-top: 1rem; padding: .9rem; border-radius: 12px; font-weight: 600; font-size: .9rem; text-align: center; }
+    .erro { background: #fee2e2; color: #dc2626; }
+    .sucesso { background: #dcfce7; color: #16a34a; }
 
-    .vazio { color: #94a3b8; text-align: center; padding: 3rem 1.5rem; font-size: 1rem; font-weight: 500; }
+    .link-troca { text-align: center; margin-top: 1.4rem; color: #64748b; font-size: .95rem; }
+    .link-troca span { color: #667eea; font-weight: 800; cursor: pointer; }
+    .link-troca span:hover { text-decoration: underline; }
 
-    .rel-quadro { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 1.2rem; margin-top: 1.5rem; }
-    .rel-card {
-      background: linear-gradient(135deg,#f8fafc,#f1f5f9); padding: 1.3rem;
-      border-radius: 16px; border-left: 5px solid #667eea; box-shadow: 0 4px 15px rgba(0,0,0,.05);
-    }
-    .rel-card h4 { font-size: .9rem; color: #64748b; margin-bottom: .5rem; font-weight: 700; }
-    .rel-card .valor {
-      font-size: 1.4rem; font-weight: 900;
-      background: linear-gradient(135deg,#667eea,#764ba2);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-
-    .linha { display: flex; justify-content: space-between; padding: .6rem 0; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: .95rem; }
-
-    /* Chat */
-    .lista-chats { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .chat-item {
-      background: linear-gradient(135deg,#f0f9ff,#e0f2fe); padding: 1.2rem; border-radius: 14px;
-      cursor: pointer; transition: all .3s; border: 2px solid transparent;
-    }
-    .chat-item:hover { transform: translateY(-3px); border-color: #667eea; }
-    .chat-item.ativo { border-color: #667eea; background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
-    .chat-item h4 { font-size: 1rem; margin-bottom: .3rem; font-weight: 700; }
-    .chat-item p { font-size: .85rem; opacity: .8; }
-
-    .caixa-mensagens-admin {
-      height: 420px; overflow-y: auto; padding: 1.5rem;
-      background: linear-gradient(135deg,#f0f9ff,#e0f2fe);
-      border-radius: 18px; margin-bottom: 1.2rem; border: 2px solid #e0e7ff;
-    }
-
-    .msg-bubble {
-      max-width: 80%; padding: 1rem 1.2rem; border-radius: 18px; margin-bottom: .8rem;
-      font-size: .95rem; line-height: 1.5; word-wrap: break-word; animation: slideMsg .3s ease-out;
-    }
-    @keyframes slideMsg { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .msg-bubble.cliente { background: white; color: #1e293b; border: 2px solid #e0e7ff; margin-right: auto; border-bottom-left-radius: 6px; }
-    .msg-bubble.loja { background: linear-gradient(135deg,#667eea,#764ba2); color: white; margin-left: auto; border-bottom-right-radius: 6px; }
-    .msg-bubble .hora { font-size: .72rem; opacity: .7; margin-top: .3rem; text-align: right; font-weight: 600; }
-
-    .entrada-msg { display: flex; gap: .7rem; }
-    .entrada-msg input { flex: 1; margin: 0; }
-    .entrada-msg button { width: auto; white-space: nowrap; }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .loading { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin .8s linear infinite; vertical-align: middle; margin-right: .4rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<div class="tela-principal" id="telaPrincipal">
-  <header>
-    <h1 id="headerTitulo">🐾 PetVirtua — Gestão</h1>
-    <button class="btn-sair" onclick="sair()">Sair</button>
-  </header>
+<!-- LOGIN -->
+<div class="tela-acesso" id="telaLogin">
+  <div class="caixa-acesso">
+    <h1>🏪 PetVirtua</h1>
+    <p class="slogan">Painel de Gestão para Pet Shops</p>
+    <div class="aviso-admin">🔒 Área exclusiva para donos de Pet Shop</div>
+    <div class="campo"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" /></div>
+    <div class="campo"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••" /></div>
+    <button class="btn-acesso" onclick="fazerLogin()">🔑 Entrar no Painel</button>
+    <div class="erro" id="msgErroLogin">❌ E-mail ou senha incorretos!</div>
+    <div class="link-troca">Novo por aqui? <span onclick="mostrarTela('cadastro')">Cadastre seu Pet Shop</span></div>
+  </div>
+</div>
 
-  <div class="container">
-    <div class="boas-vindas">
-      <h2 id="boasVindasTitulo">Bem-vindo! 👋</h2>
-      <p>Controle tudo do seu pet shop em um só lugar — agenda, clientes, estoque, caixa, serviços e relatórios.</p>
+<!-- CADASTRO -->
+<div class="tela-acesso" id="telaCadastro" style="display:none;">
+  <div class="caixa-acesso larga">
+    <h1>🏪 Cadastrar Pet Shop</h1>
+    <p class="slogan">Preencha os dados abaixo para criar sua conta</p>
+    <div class="aviso-admin">🔒 Este cadastro cria uma conta de ADMINISTRADOR do painel</div>
+
+    <div class="secao">👤 Dados do Responsável</div>
+    <div class="info-box">💡 Use um e-mail válido — ele será seu login para acessar o painel.</div>
+    <div class="grid-2">
+      <div class="campo"><label>Nome Completo <span class="ob">*</span></label><input type="text" id="cadRespNome" placeholder="Seu nome" /></div>
+      <div class="campo"><label>CPF</label><input type="text" id="cadRespCpf" placeholder="000.000.000-00" /></div>
+      <div class="campo"><label>E-mail <span class="ob">*</span></label><input type="email" id="cadRespEmail" placeholder="seu@email.com" /></div>
+      <div class="campo"><label>Telefone / WhatsApp <span class="ob">*</span></label><input type="tel" id="cadRespTel" placeholder="(00) 00000-0000" /></div>
+      <div class="campo"><label>Criar Senha <span class="ob">*</span></label><input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" /></div>
+      <div class="campo"><label>Confirmar Senha <span class="ob">*</span></label><input type="password" id="cadSenhaConfirm" placeholder="Repita a senha" /></div>
     </div>
 
-    <div class="resumo">
-      <div class="card-resumo"><div class="numero" id="qtdAgenda">0</div><div class="rotulo">Agendamentos</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdClientes">0</div><div class="rotulo">Clientes</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdEstoque">0</div><div class="rotulo">Produtos</div></div>
-      <div class="card-resumo"><div class="numero" id="qtdServicos">0</div><div class="rotulo">Serviços</div></div>
-      <div class="card-resumo"><div class="numero" id="saldoGeral">0</div><div class="rotulo">Saldo R$</div></div>
+    <div class="secao">🏪 Dados do Pet Shop</div>
+    <div class="grid-2">
+      <div class="campo"><label>Nome do Pet Shop <span class="ob">*</span></label><input type="text" id="cadLojaNome" placeholder="Ex: Pet Shop Amigo Fiel" /></div>
+      <div class="campo"><label>CNPJ</label><input type="text" id="cadLojaCnpj" placeholder="00.000.000/0000-00" /></div>
+      <div class="campo"><label>Telefone da Loja</label><input type="tel" id="cadLojaTel" placeholder="(00) 0000-0000" /></div>
+      <div class="campo"><label>WhatsApp da Loja</label><input type="tel" id="cadLojaWhats" placeholder="(00) 00000-0000" /></div>
+      <div class="campo full"><label>E-mail da Loja</label><input type="email" id="cadLojaEmail" placeholder="contato@petshop.com" /></div>
     </div>
 
-    <div class="grade-modulos" id="gradeModulos">
-      <div class="modulo" onclick="abrirModulo('agenda')"><h3>📅 Agenda</h3><p>Agende, confirme e organize horários por serviço e profissional.</p></div>
-      <div class="modulo" onclick="abrirModulo('clientes')"><h3>🤝 Clientes</h3><p>Dados, histórico de pets, contatos e informações completas.</p></div>
-      <div class="modulo" onclick="abrirModulo('estoque')"><h3>📦 Estoque</h3><p>Controle de produtos, validades, custos e reposição.</p></div>
-      <div class="modulo" onclick="abrirModulo('caixa')"><h3>💰 Caixa</h3><p>Entradas, saídas, lucro e faturamento.</p></div>
-      <div class="modulo" onclick="abrirModulo('servicos')"><h3>✅ Serviços</h3><p>Tabela de preços, custos e tempo de execução.</p></div>
-      <div class="modulo" onclick="abrirModulo('chat')"><h3>💬 Mensagens</h3><p>Converse com seus clientes em tempo real.</p></div>
-      <div class="modulo" onclick="abrirModulo('relatorios')"><h3>📊 Relatórios</h3><p>Desempenho, faturamento e estatísticas.</p></div>
-    </div>
-
-    <!-- Agenda -->
-    <div id="painelAgenda" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>📅 Agenda de Banho e Tosa</h2>
-      <div class="form-grupo"><label>Cliente</label><input type="text" id="agCliente" placeholder="Nome do cliente" /></div>
-      <div class="form-grupo"><label>Pet / Raça / Porte</label><input type="text" id="agPet" placeholder="Ex: Thor — Poodle — Grande" /></div>
-      <div class="form-grupo"><label>Serviço</label>
-        <select id="agServico"><option>Banho</option><option>Banho e Tosa</option><option>Tosa Estética</option><option>Hidratação</option><option>Consulta</option><option>Outro</option></select>
-      </div>
-      <div class="form-grupo"><label>Data e Hora</label><input type="datetime-local" id="agData" /></div>
-      <div class="form-grupo"><label>Profissional</label><input type="text" id="agPro" placeholder="Quem vai atender" /></div>
-      <div class="form-grupo"><label>Status</label>
-        <select id="agStatus"><option>Agendado</option><option>Concluído</option><option>Cancelado</option></select>
-      </div>
-      <button class="btn btn-primario" onclick="salvarAgendamento()">Salvar Agendamento</button>
-      <div class="lista" id="listaAgenda"><div class="vazio">Nenhum agendamento.</div></div>
-    </div>
-
-    <!-- Clientes -->
-    <div id="painelClientes" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>🤝 Clientes</h2>
-      <div class="form-grupo"><label>Nome Completo</label><input type="text" id="clNome" /></div>
-      <div class="form-grupo"><label>Telefone / WhatsApp</label><input type="tel" id="clTel" placeholder="(00) 00000-0000" /></div>
-      <div class="form-grupo"><label>Endereço</label><input type="text" id="clEnd" /></div>
-      <div class="form-grupo"><label>Pets</label><textarea id="clPets" rows="2" placeholder="Nome, raça, idade, alergias..."></textarea></div>
-      <button class="btn btn-primario" onclick="salvarCliente()">Salvar Cliente</button>
-      <div class="lista" id="listaClientes"><div class="vazio">Nenhum cliente.</div></div>
-    </div>
-
-    <!-- Estoque -->
-    <div id="painelEstoque" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>📦 Estoque e Produtos</h2>
-      <div class="form-grupo"><label>Nome do Produto</label><input type="text" id="prNome" /></div>
-      <div class="form-grupo"><label>Categoria</label>
-        <select id="prCat"><option>Ração</option><option>Medicamento</option><option>Acessório</option><option>Brinquedo</option><option>Higiene</option><option>Outro</option></select>
-      </div>
-      <div class="form-grupo"><label>Quantidade</label><input type="number" id="prQtd" min="0" /></div>
-      <div class="form-grupo"><label>Custo (R$)</label><input type="number" step="0.01" id="prCusto" /></div>
-      <div class="form-grupo"><label>Venda (R$)</label><input type="number" step="0.01" id="prVenda" /></div>
-      <div class="form-grupo"><label>Validade / Lote</label><input type="text" id="prVal" placeholder="DD/MM/AAAA" /></div>
-      <button class="btn btn-primario" onclick="salvarProduto()">Salvar Produto</button>
-      <div class="lista" id="listaEstoque"><div class="vazio">Estoque vazio.</div></div>
-    </div>
-
-    <!-- Caixa -->
-    <div id="painelCaixa" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>💰 Caixa e Financeiro</h2>
-      <div class="form-grupo"><label>Descrição</label><input type="text" id="cxDesc" placeholder="Ex: Banho Thor" /></div>
-      <div class="form-grupo"><label>Tipo</label>
-        <select id="cxTipo"><option>Entrada (Venda/Serviço)</option><option>Saída (Despesa/Custo)</option></select>
-      </div>
-      <div class="form-grupo"><label>Valor (R$)</label><input type="number" step="0.01" id="cxValor" /></div>
-      <button class="btn btn-sucesso" onclick="salvarMovimento()">Registrar</button>
-      <div style="margin-top:1.5rem; padding:1.2rem; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border-radius:14px; border:2px solid #86efac;">
-        <strong>💵 Saldo:</strong> R$ <span id="saldoCaixa" style="font-weight:900; font-size:1.2rem; color:#16a34a;">0,00</span>
-      </div>
-      <div class="lista" id="listaCaixa"><div class="vazio">Sem movimentos.</div></div>
-    </div>
-
-    <!-- Serviços -->
-    <div id="painelServicos" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>✅ Serviços e Preços</h2>
-      <div class="form-grupo"><label>Nome do Serviço</label><input type="text" id="svNome" placeholder="Ex: Banho — Cão Pequeno" /></div>
-      <div class="form-grupo"><label>Valor de Venda (R$)</label><input type="number" step="0.01" id="svValor" /></div>
-      <div class="form-grupo"><label>Custo (R$)</label><input type="number" step="0.01" id="svCusto" /></div>
-      <div class="form-grupo"><label>Tempo (min)</label><input type="number" id="svTempo" /></div>
-      <div class="form-grupo"><label>Observações</label><input type="text" id="svObs" /></div>
-      <button class="btn btn-primario" onclick="salvarServico()">Salvar Serviço</button>
-      <div class="lista" id="listaServicos"><div class="vazio">Nenhum serviço.</div></div>
-    </div>
-
-    <!-- Chat -->
-    <div id="painelChat" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>💬 Mensagens dos Clientes</h2>
-      <div class="lista-chats" id="listaChats"><div class="vazio">Nenhuma conversa.</div></div>
-      <div id="areaChat" style="display:none;">
-        <h3 style="margin-bottom:1rem; font-weight:800;">💬 Conversa com <span id="nomeChatCliente"></span></h3>
-        <div class="caixa-mensagens-admin" id="caixaMsgAdmin"></div>
-        <div class="entrada-msg">
-          <input type="text" id="inputMsgAdmin" placeholder="Digite sua resposta..." />
-          <button class="btn btn-sucesso" onclick="enviarResposta()">➤ Enviar</button>
-        </div>
+    <div class="secao">📍 Endereço</div>
+    <div class="info-box">📮 Digite o CEP e o endereço é preenchido automaticamente — você só informa o número!</div>
+    <div class="grid-2">
+      <div class="campo"><label>CEP</label><input type="text" id="cadCep" placeholder="00000-000" inputmode="numeric" /><span class="status-cep" id="statusCep"></span></div>
+      <div class="campo"><label>Número <span class="ob">*</span></label><input type="text" id="cadNumero" placeholder="Ex: 123" /></div>
+      <div class="campo full"><label>Rua / Avenida</label><input type="text" id="cadRua" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Complemento</label><input type="text" id="cadComplemento" placeholder="Sala, andar..." /></div>
+      <div class="campo"><label>Bairro</label><input type="text" id="cadBairro" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Cidade <span class="ob">*</span></label><input type="text" id="cadCidade" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Estado <span class="ob">*</span></label>
+        <select id="cadEstado">
+          <option value="">UF</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+        </select>
       </div>
     </div>
 
-    <!-- Relatórios -->
-    <div id="painelRelatorios" class="painel">
-      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
-      <h2>📊 Relatórios e Desempenho</h2>
-      <div class="rel-quadro">
-        <div class="rel-card"><h4>💰 Faturamento</h4><div class="valor" id="relFat">R$ 0,00</div></div>
-        <div class="rel-card"><h4>📦 Movimentos</h4><div class="valor" id="relMov">0</div></div>
-        <div class="rel-card"><h4>✅ Serviços Concluídos</h4><div class="valor" id="relServ">0</div></div>
-        <div class="rel-card"><h4>🏆 Top Serviço</h4><div class="valor" id="relTop">-</div></div>
-      </div>
-      <div style="margin-top:2rem;">
-        <h3 style="margin-bottom:1rem; font-weight:800;">📋 Resumo Financeiro</h3>
-        <div id="resumoFin">
-          <div class="linha"><span>Entradas</span><span>R$ 0,00</span></div>
-          <div class="linha"><span>Saídas</span><span>R$ 0,00</span></div>
-          <div class="linha" style="font-weight:900; color:#16a34a; border-top:3px solid #16a34a; padding-top:.8rem;">
-            <span>💵 LUCRO</span><span>R$ 0,00</span>
-          </div>
-        </div>
-      </div>
+    <div class="secao">📋 Informações do Negócio</div>
+    <div class="grid-2">
+      <div class="campo full"><label>Descrição do Pet Shop</label><textarea id="cadDescricao" placeholder="Serviços oferecidos, diferenciais..."></textarea></div>
+      <div class="campo"><label>Horário de Funcionamento</label><input type="text" id="cadHorario" placeholder="Seg-Sex 8h-18h" /></div>
+      <div class="campo"><label>Instagram</label><input type="text" id="cadInstagram" placeholder="@seupetshop" /></div>
+      <div class="campo full"><label>Site</label><input type="url" id="cadSite" placeholder="https://..." /></div>
     </div>
+
+    <button class="btn-acesso" id="btnCadastrar" onclick="cadastrarPetShop()">🐾 Cadastrar Meu Pet Shop</button>
+    <div class="erro" id="msgErroCadastro"></div>
+    <div class="sucesso" id="msgSucessoCadastro"></div>
+    <div class="link-troca">Já tem conta? <span onclick="mostrarTela('login')">Faça login</span></div>
   </div>
 </div>
 
 <script>
-let petshopAtual = null;
-let clienteChatAtivo = null;
-let channelChat = null;
+function mostrarTela(tela) {
+  document.getElementById("telaLogin").style.display = "none";
+  document.getElementById("telaCadastro").style.display = "none";
+  document.getElementById(tela === 'login' ? "telaLogin" : "telaCadastro").style.display = "flex";
+  window.scrollTo(0, 0);
+}
 
-// ==================== PROTEÇÃO DE ROTA ====================
-document.addEventListener("DOMContentLoaded", () => {
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (!session) { window.location.href = "acesso.html"; return; }
-    iniciar(session.user.id);
+// ==================== MÁSCARAS ====================
+function mascararCep(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 8);
+    el.value = v.length > 5 ? v.slice(0, 5) + "-" + v.slice(5) : v;
+    if (v.length === 8) buscarCep(v);
+    else document.getElementById("statusCep").textContent = "";
   });
-});
+}
+function mascararTelefone(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 11);
+    if (v.length > 10)      v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+    else if (v.length > 6)  v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+    else if (v.length > 2)  v = v.replace(/(\d{2})(\d{0,6})/, "($1) $2");
+    el.value = v;
+  });
+}
+mascararCep(document.getElementById("cadCep"));
+mascararTelefone(document.getElementById("cadRespTel"));
+mascararTelefone(document.getElementById("cadLojaTel"));
+mascararTelefone(document.getElementById("cadLojaWhats"));
 
-supabase.auth.onAuthStateChange((event) => {
-  if (event === "SIGNED_OUT") window.location.href = "acesso.html";
-});
+// ==================== CEP (ViaCEP) ====================
+async function buscarCep(cep) {
+  const status = document.getElementById("statusCep");
+  status.textContent = "🔍 Buscando endereço...";
+  try {
+    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resp.json();
+    if (dados.erro) { status.textContent = "⚠️ CEP não encontrado — preencha manualmente."; return; }
+    document.getElementById("cadRua").value = dados.logradouro || "";
+    document.getElementById("cadBairro").value = dados.bairro || "";
+    document.getElementById("cadCidade").value = dados.localidade || "";
+    document.getElementById("cadEstado").value = dados.uf || "";
+    if (dados.complemento) document.getElementById("cadComplemento").value = dados.complemento;
+    status.textContent = "✅ Endereço encontrado! Agora informe apenas o número.";
+    document.getElementById("cadNumero").focus();
+  } catch (e) { status.textContent = "⚠️ Falha na busca — preencha manualmente."; }
+}
 
-async function iniciar(userId) {
-  const { data: petshop } = await supabase
-    .from("petshops").select("*").eq("usuario_id", userId).single();
+// ==================== LOGIN ====================
+async function fazerLogin() {
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const senha = document.getElementById("loginSenha").value;
+  const erro = document.getElementById("msgErroLogin");
+  erro.style.display = "none";
+  if (!email || !senha) { erro.style.display = "block"; return; }
 
-  if (petshop) {
-    petshopAtual = petshop;
-    document.getElementById("headerTitulo").textContent = `🐾 ${petshop.loja_nome} — Gestão`;
-    document.getElementById("boasVindasTitulo").textContent = `Bem-vindo, ${petshop.loja_nome}! 👋`;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if (error || !data.user) { erro.style.display = "block"; return; }
+
+  // Verifica se é admin
+  const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", data.user.id).single();
+  
+  if (profile?.tipo !== "admin") {
+    await supabase.auth.signOut();
+    erro.textContent = "⚠️ Esta não é uma conta de Pet Shop. Use o app do cliente.";
+    erro.style.display = "block";
+    return;
   }
 
-  carregarTudo();
-  iniciarChatRealtime();
+  window.location.href = "admin.html";
 }
 
-async function sair() {
-  await supabase.auth.signOut();
-  window.location.href = "acesso.html";
+// ==================== CADASTRO PET SHOP ====================
+async function cadastrarPetShop() {
+  const btn = document.getElementById("btnCadastrar");
+  const erro = document.getElementById("msgErroCadastro");
+  const sucesso = document.getElementById("msgSucessoCadastro");
+  erro.style.display = "none"; sucesso.style.display = "none";
+
+  const d = {
+    resp_nome: val("cadRespNome"), resp_cpf: val("cadRespCpf"),
+    resp_email: val("cadRespEmail").toLowerCase(), resp_tel: val("cadRespTel"),
+    senha: document.getElementById("cadSenha").value, senha2: document.getElementById("cadSenhaConfirm").value,
+    loja_nome: val("cadLojaNome"), loja_cnpj: val("cadLojaCnpj"),
+    loja_tel: val("cadLojaTel"), loja_whats: val("cadLojaWhats"), loja_email: val("cadLojaEmail"),
+    cep: val("cadCep"), rua: val("cadRua"), numero: val("cadNumero"), complemento: val("cadComplemento"),
+    bairro: val("cadBairro"), cidade: val("cadCidade"), estado: document.getElementById("cadEstado").value,
+    descricao: val("cadDescricao"), horario: val("cadHorario"), instagram: val("cadInstagram"), site: val("cadSite")
+  };
+
+  if (!d.resp_nome || !d.resp_email || !d.resp_tel || !d.loja_nome || !d.cidade || !d.estado || !d.numero) return falha("❌ Preencha todos os campos obrigatórios (*)!");
+  if (d.senha.length < 6) return falha("❌ A senha deve ter no mínimo 6 caracteres!");
+  if (d.senha !== d.senha2) return falha("❌ As senhas não coincidem!");
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Cadastrando...';
+
+  try {
+    const { data: auth, error: authErr } = await supabase.auth.signUp({
+      email: d.resp_email, password: d.senha,
+      options: { data: { nome: d.resp_nome, tipo: 'admin' } }
+    });
+    if (authErr) throw new Error(authErr.message);
+    const userId = auth.user.id;
+
+    await supabase.from("profiles").upsert({ id: userId, nome: d.resp_nome, email: d.resp_email, telefone: d.resp_tel, tipo: 'admin' });
+
+    const { error: shopErr } = await supabase.from("petshops").insert([{
+      usuario_id: userId, responsavel_nome: d.resp_nome, responsavel_email: d.resp_email,
+      responsavel_telefone: d.resp_tel, responsavel_cpf: d.resp_cpf,
+      loja_nome: d.loja_nome, loja_cnpj: d.loja_cnpj, loja_telefone: d.loja_tel,
+      loja_whatsapp: d.loja_whats, loja_email: d.loja_email,
+      cep: d.cep, rua: d.rua, numero: d.numero, complemento: d.complemento,
+      bairro: d.bairro, cidade: d.cidade, estado: d.estado,
+      descricao: d.descricao, horario_funcionamento: d.horario, instagram: d.instagram, site: d.site
+    }]);
+    if (shopErr) throw new Error(shopErr.message);
+
+    const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({ email: d.resp_email, password: d.senha });
+    if (!loginErr && login.user) {
+      sucesso.textContent = "✅ Pet Shop cadastrado! Entrando no painel...";
+      sucesso.style.display = "block";
+      setTimeout(() => window.location.href = "admin.html", 1200);
+    } else {
+      sucesso.textContent = "✅ Conta criada! Confirme seu e-mail e faça login.";
+      sucesso.style.display = "block";
+      setTimeout(() => mostrarTela('login'), 2000);
+    }
+  } catch (e) {
+    falha("❌ Erro: " + e.message);
+    btn.disabled = false;
+    btn.innerHTML = "🐾 Cadastrar Meu Pet Shop";
+  }
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function falha(msg) { erro.textContent = msg; erro.style.display = "block"; erro.scrollIntoView({ behavior: "smooth", block: "center" }); }
 }
 
-// ==================== NAVEGAÇÃO ====================
-let painelAtivo = null;
-function abrirModulo(nome) {
-  document.getElementById("gradeModulos").style.display = "none";
-  document.querySelectorAll(".painel").forEach(p => p.classList.remove("ativo"));
-  painelAtivo = nome.charAt(0).toUpperCase() + nome.slice(1);
-  document.getElementById("painel" + painelAtivo)?.classList.add("ativo");
-  if (nome === 'chat') carregarChats();
-}
+document.getElementById("loginSenha").addEventListener("keypress", e => e.key === "Enter" && fazerLogin());
 
-function voltar() {
-  document.querySelectorAll(".painel").forEach(p => p.classList.remove("ativo"));
-  document.getElementById("gradeModulos").style.display = "grid";
-  painelAtivo = null;
-}
-
-// ==================== AGENDA ====================
-async function salvarAgendamento() {
-  if (!petshopAtual) return;
-  const { error } = await supabase.from("agendamentos").insert([{
-    petshop_id: petshopAtual.id,
-    cliente: document.getElementById("agCliente").value,
-    pet_nome: document.getElementById("agPet").value,
-    servico: document.getElementById("agServico").value,
-    data: document.getElementById("agData").value,
-    profissional: document.getElementById("agPro").value,
-    status: document.getElementById("agStatus").value
-  }]);
-  if (error) return alert("Erro: " + error.message);
-  limparCampos(["agCliente","agPet","agData","agPro"]);
-  carregarAgenda();
-}
-
-async function carregarAgenda() {
-  if (!petshopAtual) return;
-  const { data } = await supabase.from("agendamentos").select("*").eq("petshop_id", petshopAtual.id).order("data", {asc:true});
-  const el = document.getElementById("listaAgenda");
-  el.innerHTML = data?.length ? data.map(a => {
-    const tag = a.status === "Concluído" ? "tag-concluido" : a.status === "Cancelado" ? "tag-cancelado" : "tag-agendado";
-    return `<div class="item-lista"><strong>${a.cliente||'Cliente'}</strong> — ${a.pet_nome}<span class="tag ${tag}">${a.status}</span><br>${a.servico} • ${a.profissional||'Sem responsável'}<br><small>${new Date(a.data).toLocaleString("pt-BR")}</small></div>`;
-  }).join("") : `<div class="vazio">Nenhum agendamento.</div>`;
-  document.getElementById("qtdAgenda").textContent = data?.length || 0;
-}
-
-// ==================== CLIENTES ====================
-async function salvarCliente() {
-  const { error } = await supabase.from("profiles").insert([{
-    nome: document.getElementById("clNome").value,
-    telefone: document.getElementById("clTel").value,
-    endereco: document.getElementById("clEnd").value,
-    tipo: 'cliente'
-  }]);
-  if (error) return alert("Erro: " + error.message);
-  limparCampos(["clNome","clTel","clEnd","clPets"]);
-  carregarClientes();
-}
-
-async function carregarClientes() {
-  const { data } = await supabase.from("profiles").select("*").eq("tipo", "cliente").order("nome");
-  const el = document.getElementById("listaClientes");
-  el.innerHTML = data?.length ? data.map(c => `<div class="item-lista"><strong>${c.nome}</strong><br>📞 ${c.telefone||'—'}<br>📧 ${c.email||'—'}</div>`).join("") : `<div class="vazio">Nenhum cliente.</div>`;
-  document.getElementById("qtdClientes").textContent = data?.length || 0;
-}
-
-// ==================== ESTOQUE ====================
-async function salvarProduto() {
-  if (!petshopAtual) return;
-  const { error } = await supabase.from("estoque").insert([{
-    petshop_id: petshopAtual.id,
-    nome: document.getElementById("prNome").value,
-    categoria: document.getElementById("prCat").value,
-    quantidade: Number(document.getElementById("prQtd").value),
-    custo: Number(document.getElementById("prCusto").value),
-    venda: Number(document.getElementById("prVenda").value),
-    validade_lote: document.getElementById("prVal").value
-  }]);
-  if (error) return alert("Erro: " + error.message);
-  limparCampos(["prNome","prQtd","prCusto","prVenda","prVal"]);
-  carregarEstoque();
-}
-
-async function carregarEstoque() {
-  if (!petshopAtual) return;
-  const { data } = await supabase.from("estoque").select("*").eq("petshop_id", petshopAtual.id);
-  const el = document.getElementById("listaEstoque");
-  el.innerHTML = data?.length ? data.map(p => `<div class="item-lista"><strong>${p.nome}</strong> — ${p.categoria}<span style="float:right;font-weight:900">${p.quantidade} un</span><br>Custo: R$${(p.custo||0).toFixed(2)} • Venda: R$${(p.venda||0).toFixed(2)}<br><small>Val: ${p.validade_lote||'—'}</small></div>`).join("") : `<div class="vazio">Estoque vazio.</div>`;
-  document.getElementById("qtdEstoque").textContent = data?.length || 0;
-}
-
-// ==================== CAIXA ====================
-async function salvarMovimento() {
-  if (!petshopAtual) return;
-  const tipo = document.getElementById("cxTipo").value.includes("Entrada") ? "Entrada" : "Saída";
-  const { error } = await supabase.from("caixa").insert([{
-    petshop_id: petshopAtual.id,
-    descricao: document.getElementById("cxDesc").value,
-    tipo,
-    valor: Number(document.getElementById("cxValor").value)
-  }]);
-  if (error) return alert("Erro: " + error.message);
-  limparCampos(["cxDesc","cxValor"]);
-  carregarCaixa();
-}
-
-async function carregarCaixa() {
-  if (!petshopAtual) return;
-  const { data } = await supabase.from("caixa").select("*").eq("petshop_id", petshopAtual.id).order("data", {asc:false});
-  let ent = 0, sai = 0;
-  data?.forEach(m => m.tipo === "Entrada" ? ent += m.valor : sai += m.valor);
-  const saldo = ent - sai;
-  document.getElementById("saldoCaixa").textContent = saldo.toFixed(2).replace(".",",");
-  document.getElementById("saldoGeral").textContent = saldo.toFixed(2).replace(".",",");
-  const el = document.getElementById("listaCaixa");
-  el.innerHTML = data?.length ? data.map(m => `<div class="item-lista">${m.tipo==="Entrada"?"🟢":""} ${m.descricao}<span style="float:right;font-weight:900">${m.tipo} — R$ ${m.valor?.toFixed(2)}</span><br><small>${new Date(m.data).toLocaleString("pt-BR")}</small></div>`).join("") : `<div class="vazio">Sem movimentos.</div>`;
-}
-
-// ==================== SERVIÇOS ====================
-async function salvarServico() {
-  if (!petshopAtual) return;
-  const { error } = await supabase.from("servicos").insert([{
-    petshop_id: petshopAtual.id,
-    nome: document.getElementById("svNome").value,
-    valor: Number(document.getElementById("svValor").value),
-    custo: Number(document.getElementById("svCusto").value || 0),
-    tempo_min: Number(document.getElementById("svTempo").value || 0),
-    observacoes: document.getElementById("svObs").value
-  }]);
-  if (error) return alert("Erro: " + error.message);
-  limparCampos(["svNome","svValor","svCusto","svTempo","svObs"]);
-  carregarServicos();
-}
-
-async function carregarServicos() {
-  if (!petshopAtual) return;
-  const { data } = await supabase.from("servicos").select("*").eq("petshop_id", petshopAtual.id).order("nome");
-  const el = document.getElementById("listaServicos");
-  el.innerHTML = data?.length ? data.map(s => {
-    const lucro = (s.valor||0)-(s.custo||0);
-    return `<div class="item-lista"><strong>${s.nome}</strong><span style="float:right;font-weight:900">Lucro: R$ ${lucro.toFixed(2)}</span><br>Venda: R$ ${(s.valor||0).toFixed(2)} • Custo: R$ ${(s.custo||0).toFixed(2)}${s.tempo_min?` • ${s.tempo_min}min`:''}${s.observacoes?`<br><small>${s.observacoes}</small>`:''}</div>`;
-  }).join("") : `<div class="vazio">Nenhum serviço.</div>`;
-  document.getElementById("qtdServicos").textContent = data?.length || 0;
-}
-
-// ==================== CHAT TEMPO REAL ====================
-async function carregarChats() {
-  const { data } = await supabase.from("mensagens").select("cliente_id, cliente_nome").order("data", {asc:false});
-  const unicos = [];
-  const vistos = new Set();
-  data?.forEach(m => { if (!vistos.has(m.cliente_id)) { unicos.push({id:m.cliente_id,nome:m.cliente_nome}); vistos.add(m.cliente_id); } });
-  const el = document.getElementById("listaChats");
-  el.innerHTML = unicos.length ? unicos.map(c => `<div class="chat-item" onclick="abrirChat('${c.id}','${c.nome}',this)"><h4>👤 ${c.nome}</h4><p>Clique para conversar</p></div>`).join("") : `<div class="vazio">Nenhuma conversa.</div>`;
-}
-
-function abrirChat(id, nome, el) {
-  clienteChatAtivo = { id, nome };
-  document.querySelectorAll(".chat-item").forEach(i => i.classList.remove("ativo"));
-  el.classList.add("ativo");
-  document.getElementById("areaChat").style.display = "block";
-  document.getElementById("nomeChatCliente").textContent = nome;
-  carregarMsgs();
-}
-
-async function carregarMsgs() {
-  if (!clienteChatAtivo) return;
-  const { data } = await supabase.from("mensagens").select("*").eq("cliente_id", clienteChatAtivo.id).order("data", {asc:true});
-  const el = document.getElementById("caixaMsgAdmin");
-  el.innerHTML = data?.length ? data.map(m => `<div class="msg-bubble ${m.remetente==='cliente'?'cliente':'loja'}">${m.texto.replace(/\n/g,"<br>")}<div class="hora">${m.remetente==='cliente'?clienteChatAtivo.nome:'Você'} • ${new Date(m.data).toLocaleString("pt-BR")}</div></div>`).join("") : `<div class="vazio">Sem mensagens.</div>`;
-  el.scrollTop = el.scrollHeight;
-}
-
-async function enviarResposta() {
-  const texto = document.getElementById("inputMsgAdmin").value.trim();
-  if (!texto || !clienteChatAtivo) return;
-  await supabase.from("mensagens").insert([{ cliente_id: clienteChatAtivo.id, cliente_nome: clienteChatAtivo.nome, remetente: "loja", texto }]);
-  document.getElementById("inputMsgAdmin").value = "";
-}
-
-function iniciarChatRealtime() {
-  if (channelChat) supabase.removeChannel(channelChat);
-  channelChat = supabase.channel('chat-admin-global')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
-      if (clienteChatAtivo && payload.new.cliente_id === clienteChatAtivo.id) {
-        const el = document.getElementById("caixaMsgAdmin");
-        el.innerHTML += `<div class="msg-bubble ${payload.new.remetente==='cliente'?'cliente':'loja'}">${payload.new.texto.replace(/\n/g,"<br>")}<div class="hora">${payload.new.remetente==='cliente'?clienteChatAtivo.nome:'Você'} • ${new Date(payload.new.data).toLocaleString("pt-BR")}</div></div>`;
-        el.scrollTop = el.scrollHeight;
-      }
-      carregarChats();
-    }).subscribe();
-}
-
-// ==================== RELATÓRIOS ====================
-async function carregarRelatorios() {
-  if (!petshopAtual) return;
-  const { data: agenda } = await supabase.from("agendamentos").select("*").eq("petshop_id", petshopAtual.id);
-  const { data: caixa } = await supabase.from("caixa").select("*").eq("petshop_id", petshopAtual.id);
-  let ent = 0, sai = 0;
-  caixa?.forEach(m => m.tipo === "Entrada" ? ent += m.valor : sai += m.valor);
-  const lucro = ent - sai;
-  const concluidos = agenda?.filter(a => a.status === "Concluído").length || 0;
-  const cont = {};
-  agenda?.forEach(a => { cont[a.servico] = (cont[a.servico]||0)+1; });
-  const top = Object.entries(cont).sort((a,b)=>b[1]-a[1])[0];
-
-  document.getElementById("relFat").textContent = `R$ ${lucro.toFixed(2).replace(".",",")}`;
-  document.getElementById("relMov").textContent = caixa?.length || 0;
-  document.getElementById("relServ").textContent = concluidos;
-  document.getElementById("relTop").textContent = top ? `${top[0]} (${top[1]})` : "-";
-  document.getElementById("resumoFin").innerHTML = `
-    <div class="linha"><span>Entradas</span><span>R$ ${ent.toFixed(2)}</span></div>
-    <div class="linha"><span>Saídas</span><span>R$ ${sai.toFixed(2)}</span></div>
-    <div class="linha" style="font-weight:900;color:#16a34a;border-top:3px solid #16a34a;padding-top:.8rem;"><span>💵 LUCRO</span><span>R$ ${lucro.toFixed(2)}</span></div>`;
-}
-
-// ==================== UTILITÁRIOS ====================
-function limparCampos(ids) { ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; }); }
-
-async function carregarTudo() {
-  await Promise.all([carregarAgenda(), carregarClientes(), carregarEstoque(), carregarCaixa(), carregarServicos(), carregarRelatorios()]);
-}
-
-document.getElementById("inputMsgAdmin").addEventListener("keypress", e => e.key === "Enter" && enviarResposta());
+// Sessão existente → redireciona se for admin, senão faz logout
+document.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", session.user.id).single();
+    if (profile?.tipo === "admin") {
+      window.location.href = "admin.html";
+    } else {
+      await supabase.auth.signOut();
+    }
+  }
+});
 </script>
 </body>
 </html>
