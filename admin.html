@@ -77,21 +77,78 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .icon-btn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white; }
 .content { padding: 2rem; flex: 1; min-width: 0; }
 
-/* ============ CARDS / STATS ============ */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-.stat-card { background: var(--card); padding: 1.2rem 1.3rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: 1rem; transition: all .2s; cursor: pointer; }
+/* ============ CARDS DE ESTATÍSTICAS - LINHA ÚNICA ============ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--card);
+  padding: 1.1rem 1.2rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  transition: all .2s;
+  cursor: pointer;
+  min-width: 0;
+}
 .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; font-size: 1.4rem; flex-shrink: 0; }
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
 .stat-icon.blue { background: #dbeafe; color: #1e40af; }
 .stat-icon.green { background: #d1fae5; color: #065f46; }
 .stat-icon.orange { background: #fed7aa; color: #9a3412; }
 .stat-icon.purple { background: #e9d5ff; color: #6b21a8; }
 .stat-icon.red { background: #fee2e2; color: #991b1b; }
-.stat-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
-.stat-label { font-size: .8rem; color: var(--text-soft); font-weight: 500; margin-bottom: .2rem; }
-.stat-change { font-size: .72rem; font-weight: 700; margin-top: .2rem; }
+.stat-info { min-width: 0; flex: 1; }
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-label {
+  font-size: .75rem;
+  color: var(--text-soft);
+  font-weight: 500;
+  margin-bottom: .15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stat-change {
+  font-size: .7rem;
+  font-weight: 700;
+  margin-top: .15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .stat-change.up { color: var(--success); }
 .stat-change.down { color: var(--danger); }
+
+/* Tablet: 2 colunas */
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* Mobile: 1 coluna */
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .card-header { padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
@@ -302,16 +359,11 @@ tr:hover td { background: #fafbfc; }
 </div>
 
 <script>
-// =====================================================
-// PETVIRTUA — SISTEMA DE GESTÃO COMPLETO
-// =====================================================
-
 const App = {
   user: null, loja: null, currentPage: 'dashboard',
   data: { clientes:[], pets:[], servicos:[], produtos:[], funcionarios:[], agendamentos:[], vendas:[], financeiro:[], os:[], conversas:[], mensagens:[] }
 };
 
-// ==================== HELPERS ====================
 const $  = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 const el = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
@@ -346,24 +398,19 @@ const masks = {
   cep: v => { v = v.replace(/\D/g,'').slice(0,8); return v.length>5 ? v.slice(0,5)+'-'+v.slice(5) : v; }
 };
 
-// ==================== AUTENTICAÇÃO ====================
 async function checkAuth() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { window.location.href = 'index.html'; return; }
-
     const { data: loja } = await supabase.from('petshops').select('*').eq('usuario_id', session.user.id).maybeSingle();
     if (!loja) { await supabase.auth.signOut(); window.location.href = 'index.html'; return; }
-
     App.user = session.user;
     App.loja = loja;
     const nome = session.user.user_metadata?.nome || session.user.email;
     $('#userName').textContent = nome;
     $('#userAvatar').textContent = nome[0].toUpperCase();
-
     $('#loading').remove();
     $('#app').classList.remove('hidden');
-
     await carregarTudo();
     renderPage('dashboard');
     iniciarRealtimeChatAdmin();
@@ -376,7 +423,6 @@ async function logout() {
   window.location.href = 'index.html';
 }
 
-// ==================== DADOS ====================
 async function carregarTudo() {
   if (!App.loja.id) return;
   const id = App.loja.id;
@@ -392,7 +438,6 @@ async function carregarTudo() {
     supabase.from('os').select('*, pets(nome), clientes(nome)').eq('loja_id', id).order('created_at', { ascending: false }),
     supabase.from('conversas').select('*, clientes(nome, email, telefone)').eq('loja_id', id).order('ultima_atualizacao', { ascending: false })
   ]);
-
   App.data.clientes = clientes.data || [];
   App.data.pets = pets.data || [];
   App.data.servicos = servicos.data || [];
@@ -403,8 +448,6 @@ async function carregarTudo() {
   App.data.financeiro = financeiro.data || [];
   App.data.os = os.data || [];
   App.data.conversas = conversas.data || [];
-
-  // Atualiza badges
   const hoje = new Date().toISOString().slice(0,10);
   $('#agendaHoje').textContent = App.data.agendamentos.filter(a => a.data_hora?.slice(0,10) === hoje).length;
   const totalNaoLidas = App.data.conversas.reduce((s,c) => s + (c.nao_lidas_loja || 0), 0);
@@ -412,7 +455,6 @@ async function carregarTudo() {
   if (badge) { badge.textContent = totalNaoLidas; badge.style.display = totalNaoLidas > 0 ? 'inline-block' : 'none'; }
 }
 
-// ==================== ROTEAMENTO ====================
 $$('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     $$('.nav-item').forEach(i => i.classList.remove('active'));
@@ -445,10 +487,8 @@ function renderPage(page) {
   const fn = Page[page]; if (fn) fn();
 }
 
-// ==================== PÁGINAS ====================
 const Page = {};
 
-// ---------- DASHBOARD ----------
 Page.dashboard = () => {
   const hoje = new Date().toISOString().slice(0,10);
   const mesAtual = new Date().toISOString().slice(0,7);
@@ -461,10 +501,38 @@ Page.dashboard = () => {
 
   const html = `
     <div class="stats-grid">
-      <div class="stat-card" onclick="renderPage('agenda')"><div class="stat-icon blue">📅</div><div><div class="stat-label">Agendamentos Hoje</div><div class="stat-value">${agsHoje.length}</div><div class="stat-change up">▲ ${App.data.agendamentos.length} no total</div></div></div>
-      <div class="stat-card" onclick="renderPage('vendas')"><div class="stat-icon green">💰</div><div><div class="stat-label">Vendas no Mês</div><div class="stat-value">${fmtMoney(totalMes)}</div><div class="stat-change up">${vendasMes.length} vendas</div></div></div>
-      <div class="stat-card" onclick="renderPage('clientes')"><div class="stat-icon orange">👥</div><div><div class="stat-label">Clientes</div><div class="stat-value">${App.data.clientes.length}</div><div class="stat-change up">${App.data.pets.length} pets</div></div></div>
-      <div class="stat-card" onclick="renderPage('chat')"><div class="stat-icon purple">💬</div><div><div class="stat-label">Chat</div><div class="stat-value">${App.data.conversas.length}</div><div class="stat-change">${naoLidas} não lidas</div></div></div>
+      <div class="stat-card" onclick="renderPage('agenda')">
+        <div class="stat-icon blue">📅</div>
+        <div class="stat-info">
+          <div class="stat-label">Agendamentos Hoje</div>
+          <div class="stat-value">${agsHoje.length}</div>
+          <div class="stat-change up">▲ ${App.data.agendamentos.length} no total</div>
+        </div>
+      </div>
+      <div class="stat-card" onclick="renderPage('vendas')">
+        <div class="stat-icon green">💰</div>
+        <div class="stat-info">
+          <div class="stat-label">Vendas no Mês</div>
+          <div class="stat-value">${fmtMoney(totalMes)}</div>
+          <div class="stat-change up">${vendasMes.length} vendas</div>
+        </div>
+      </div>
+      <div class="stat-card" onclick="renderPage('clientes')">
+        <div class="stat-icon orange">👥</div>
+        <div class="stat-info">
+          <div class="stat-label">Clientes</div>
+          <div class="stat-value">${App.data.clientes.length}</div>
+          <div class="stat-change up">${App.data.pets.length} pets</div>
+        </div>
+      </div>
+      <div class="stat-card" onclick="renderPage('chat')">
+        <div class="stat-icon purple">💬</div>
+        <div class="stat-info">
+          <div class="stat-label">Chat</div>
+          <div class="stat-value">${App.data.conversas.length}</div>
+          <div class="stat-change">${naoLidas} não lidas</div>
+        </div>
+      </div>
     </div>
 
     <div class="quick-grid">
@@ -530,7 +598,6 @@ Page.dashboard = () => {
   });
 };
 
-// ---------- AGENDA ----------
 Page.agenda = () => {
   const ags = App.data.agendamentos;
   $('#pageContent').innerHTML = `
@@ -568,7 +635,7 @@ function filtrarAgenda(q) { q=q.toLowerCase(); $('#tabelaAgenda tbody').innerHTM
 function filtrarStatusAgenda(s) { $('#tabelaAgenda tbody').innerHTML = renderAgRows(s ? App.data.agendamentos.filter(a => a.status === s) : App.data.agendamentos); }
 
 async function formAgendamento(id) {
-  const ag = id ? App.data.agendamentos.find(x => x.id === id) : null;
+  const ag = id ? App.data.agendamentos.find(x => x.id == id) : null;
   const petsOpts = App.data.pets.map(p => `<option value="${p.id}" ${ag?.pet_id==p.id?'selected':''}>${p.nome}</option>`).join('');
   const srvOpts = App.data.servicos.map(s => `<option value="${s.id}" data-preco="${s.preco}" ${ag?.servico_id==s.id?'selected':''}>${s.nome} — ${fmtMoney(s.preco)}</option>`).join('');
   const funOpts = `<option value="">—</option>` + App.data.funcionarios.filter(f=>f.ativo!==false).map(f => `<option value="${f.id}" ${ag?.profissional_id==f.id?'selected':''}>${f.nome}</option>`).join('');
@@ -601,7 +668,6 @@ async function salvarAgendamento(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- CLIENTES ----------
 Page.clientes = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -651,7 +717,6 @@ async function salvarCliente(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- PETS ----------
 Page.pets = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -710,7 +775,6 @@ async function salvarPet(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- SERVIÇOS ----------
 Page.servicos = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -765,7 +829,6 @@ async function salvarServico(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- OS ----------
 Page.os = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -822,7 +885,6 @@ async function salvarOS(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- PRODUTOS ----------
 Page.produtos = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -883,14 +945,13 @@ async function salvarProduto(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- VENDAS ----------
 Page.vendas = () => {
   const totalMes = App.data.vendas.filter(v => v.created_at?.slice(0,7) === new Date().toISOString().slice(0,7)).reduce((s,v)=>s+(v.total||0),0);
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Total no Mês</div><div class="stat-value">${fmtMoney(totalMes)}</div></div></div>
-      <div class="stat-card"><div class="stat-icon blue">🧾</div><div><div class="stat-label">Vendas no Mês</div><div class="stat-value">${App.data.vendas.filter(v => v.created_at?.slice(0,7) === new Date().toISOString().slice(0,7)).length}</div></div></div>
-      <div class="stat-card"><div class="stat-icon orange">📦</div><div><div class="stat-label">Histórico</div><div class="stat-value">${App.data.vendas.length}</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><div class="stat-label">Total no Mês</div><div class="stat-value">${fmtMoney(totalMes)}</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">🧾</div><div class="stat-info"><div class="stat-label">Vendas no Mês</div><div class="stat-value">${App.data.vendas.filter(v => v.created_at?.slice(0,7) === new Date().toISOString().slice(0,7)).length}</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">📦</div><div class="stat-info"><div class="stat-label">Histórico</div><div class="stat-value">${App.data.vendas.length}</div></div></div>
     </div>
     <div class="toolbar"><button class="btn btn-primary" onclick="formVenda()">➕ Nova Venda (PDV)</button></div>
     <div class="card"><div class="card-body nopad"><div class="table-wrap">
@@ -966,7 +1027,6 @@ async function salvarVenda() {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- FINANCEIRO ----------
 Page.financeiro = () => {
   const hoje = new Date().toISOString().slice(0,10);
   const pagar = App.data.financeiro.filter(f => f.tipo === 'despesa' && f.status === 'pendente');
@@ -974,9 +1034,9 @@ Page.financeiro = () => {
   const vencidas = pagar.filter(f => f.data_vencimento < hoje);
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon green">💵</div><div><div class="stat-label">A Receber</div><div class="stat-value">${fmtMoney(receber.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${receber.length} conta(s)</div></div></div>
-      <div class="stat-card"><div class="stat-icon orange">💸</div><div><div class="stat-label">A Pagar</div><div class="stat-value">${fmtMoney(pagar.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${pagar.length} conta(s)</div></div></div>
-      <div class="stat-card"><div class="stat-icon red">⚠️</div><div><div class="stat-label">Vencidas</div><div class="stat-value">${fmtMoney(vencidas.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change down">${vencidas.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">💵</div><div class="stat-info"><div class="stat-label">A Receber</div><div class="stat-value">${fmtMoney(receber.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${receber.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon orange">💸</div><div class="stat-info"><div class="stat-label">A Pagar</div><div class="stat-value">${fmtMoney(pagar.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change">${pagar.length} conta(s)</div></div></div>
+      <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><div class="stat-label">Vencidas</div><div class="stat-value">${fmtMoney(vencidas.reduce((s,f)=>s+f.valor,0))}</div><div class="stat-change down">${vencidas.length} conta(s)</div></div></div>
     </div>
     <div class="toolbar">
       <div class="search-input"><input placeholder="Buscar..." oninput="filtrarFin(this.value)"></div>
@@ -1040,7 +1100,6 @@ async function pagarFin(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- FUNCIONÁRIOS ----------
 Page.funcionarios = () => {
   $('#pageContent').innerHTML = `
     <div class="toolbar">
@@ -1092,7 +1151,6 @@ async function salvarFuncionario(id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ---------- RELATÓRIOS ----------
 Page.relatorios = () => {
   const mesAtual = new Date().toISOString().slice(0,7);
   const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0,7) === mesAtual);
@@ -1101,8 +1159,8 @@ Page.relatorios = () => {
 
   $('#pageContent').innerHTML = `
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Ticket Médio</div><div class="stat-value">${fmtMoney(vendasMes.reduce((s,v)=>s+v.total,0)/(vendasMes.length||1))}</div></div></div>
-      <div class="stat-card"><div class="stat-icon blue">📊</div><div><div class="stat-label">Taxa Conclusão</div><div class="stat-value">${App.data.agendamentos.length ? Math.round(App.data.agendamentos.filter(a=>a.status==='concluido').length/App.data.agendamentos.length*100) : 0}%</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">💰</div><div class="stat-info"><div class="stat-label">Ticket Médio</div><div class="stat-value">${fmtMoney(vendasMes.reduce((s,v)=>s+v.total,0)/(vendasMes.length||1))}</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue">📊</div><div class="stat-info"><div class="stat-label">Taxa Conclusão</div><div class="stat-value">${App.data.agendamentos.length ? Math.round(App.data.agendamentos.filter(a=>a.status==='concluido').length/App.data.agendamentos.length*100) : 0}%</div></div></div>
     </div>
     <div class="dashboard-grid">
       <div class="card">
@@ -1144,7 +1202,6 @@ function exportCSV(nome) {
   toast('Exportado', `${nome}.csv`, 'success');
 }
 
-// ---------- CONFIGURAÇÕES ----------
 Page.config = () => {
   const l = App.loja;
   $('#pageContent').innerHTML = `
@@ -1204,7 +1261,6 @@ function copiarCodigo() {
   toast('Copiado!', 'Código na área de transferência', 'success');
 }
 
-// ---------- CHAT ----------
 let conversaAtual = null;
 let channelChatAdmin = null;
 
@@ -1312,7 +1368,6 @@ function iniciarRealtimeChatAdmin() {
     .subscribe();
 }
 
-// ---------- CRUD GENÉRICO ----------
 async function apagar(tabela, id) {
   if (!confirm('Excluir este registro?')) return;
   try {
@@ -1322,7 +1377,6 @@ async function apagar(tabela, id) {
   } catch (e) { toast('Erro', e.message, 'error'); }
 }
 
-// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', checkAuth);
 </script>
 </body>
