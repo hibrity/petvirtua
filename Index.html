@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetVirtua — Gestão de Pet Shop</title>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+    window.supabase = createClient(
+      "https://zbxrpprwjrholrycwsqa.supabase.co",
+      "sb_publishable_c4O2UN_u487qWsu4TNwG0Q_OGj3aHNM"
+    )
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background: #f0f4f8; color: #1e293b; }
+
+    /* Tela de Login */
+    .tela-login {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .caixa-login {
+      background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.15);
+      width: 90%; max-width: 400px; text-align: center;
+    }
+    .caixa-login h1 { color: #6366f1; margin-bottom: 0.5rem; font-size: 2rem; }
+    .caixa-login .slogan { color: #64748b; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .caixa-login input {
+      width: 100%; padding: 0.9rem; font-size: 1rem; border: 2px solid #e2e8f0;
+      border-radius: 10px; margin-bottom: 1rem; text-align: center; letter-spacing: 1px;
+    }
+    .caixa-login button {
+      width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: .3s;
+    }
+    .caixa-login button:hover { opacity: 0.9; }
+    .erro { color: #dc2626; margin-top: 0.8rem; display: none; font-size: 0.9rem; }
+
+    /* Tela Principal */
+    .tela-principal { display: none; min-height: 100vh; }
+    header {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
+      padding: 1.2rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    header h1 { font-size: 1.3rem; }
+    .btn-sair { background: rgba(255,255,255,.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+
+    .container { padding: 1.2rem; max-width: 1200px; margin: 0 auto; }
+    .boas-vindas { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
+    .card-resumo { background: white; padding: 1rem; border-radius: 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+    .card-resumo .numero { font-size: 1.8rem; font-weight: bold; color: #6366f1; }
+
+    .grade-modulos {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;
+    }
+    .modulo {
+      background: white; padding: 1.3rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      cursor: pointer; transition: .25s; border-left: 4px solid #6366f1;
+    }
+    .modulo:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.1); }
+    .modulo h3 { margin-bottom: 0.4rem; color: #334155; font-size: 1rem; }
+    .modulo p { font-size: 0.88rem; color: #64748b; line-height: 1.4; }
+
+    .painel { display: none; margin-top: 1.5rem; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .painel.ativo { display: block; }
+    .painel h2 { margin-bottom: 1rem; color: #334155; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .btn-voltar { margin-bottom: 1rem; background: #e2e8f0; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; }
+
+    .form-grupo { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.9rem; }
+    input, select, textarea {
+      width: 100%; padding: 0.7rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem;
+    }
+    input:focus { outline: none; border-color: #6366f1; }
+    .btn { padding: 0.65rem 1.1rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 0.5rem; transition: .2s; }
+    .btn-primario { background: #6366f1; color: white; }
+    .btn-sucesso { background: #16a34a; color: white; }
+    .btn-perigo { background: #dc2626; color: white; }
+    .lista { margin-top: 1.2rem; }
+    .item-lista { padding: 0.85rem; border-bottom: 1px solid #f1f5f9; background: #fafafa; border-radius: 6px; margin-bottom: 0.5rem; }
+    .item-lista:last-child { border-bottom: none; }
+    .tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 600; margin-left: 0.4rem; }
+    .tag-agendado { background: #dbeafe; color: #1e40af; }
+    .tag-concluido { background: #dcfce7; color: #166534; }
+    .vazio { color: #94a3b8; text-align: center; padding: 2rem; }
+    .acoes { margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+
+<!-- Tela de Acesso -->
+<div class="tela-login" id="telaLogin">
+  <div class="caixa-login">
+    <h1>🐾 PetVirtua</h1>
+    <p class="slogan">Sistema de Gestão para Pet Shops</p>
+    <input type="text" id="chaveAcesso" placeholder="Chave de Acesso" maxlength="35" autocomplete="off" />
+    <button onclick="verificarChave()">Entrar no Sistema</button>
+    <div class="erro" id="msgErro">❌ Chave inválida! Tente novamente.</div>
+  </div>
+</div>
+
+<!-- Tela Principal -->
+<div class="tela-principal" id="telaPrincipal">
+  <header>
+    <h1>🐾 PetVirtua — Gestão de Pet Shop</h1>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </header>
+
+  <div class="container">
+    <div class="boas-vindas">
+      <h2>Bem-vindo! 👋</h2>
+      <p>Controle tudo do seu pet shop em um só lugar.</p>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="resumo">
+      <div class="card-resumo"><div class="numero" id="qtdAgenda">0</div><div>Agendamentos</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdClientes">0</div><div>Clientes</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdEstoque">0</div><div>Produtos</div></div>
+      <div class="card-resumo"><div class="numero" id="qtdServicos">0</div><div>Serviços</div></div>
+    </div>
+
+    <!-- Módulos -->
+    <div class="grade-modulos" id="gradeModulos">
+      <div class="modulo" onclick="abrirModulo('agenda')">
+        <h3>📅 Agenda Banho e Tosa</h3>
+        <p>Agende, confirme e organize horários por serviço.</p>
+      </div>
+      <div class="modulo" onclick="abrirModulo('clientes')">
+        <h3>🤝 Cadastro de Clientes</h3>
+        <p>Dados, histórico de pets, contatos e lembretes.</p>
+      </div>
+      <div class="modulo" onclick="abrirModulo('estoque')">
+        <h3>📦 Estoque e Produtos</h3>
+        <p>Controle de rações, validades, lotes e reposição.</p>
+      </div>
+      <div class="modulo" onclick="abrirModulo('caixa')">
+        <h3>💰 Caixa e Financeiro</h3>
+        <p>Entradas, saídas, lucro por serviço e faturamento.</p>
+      </div>
+      <div class="modulo" onclick="abrirModulo('servicos')">
+        <h3>✅ Serviços e Preços</h3>
+        <p>Tabela de serviços, valores e tempo de execução.</p>
+      </div>
+      <div class="modulo" onclick="abrirModulo('relatorios')">
+        <h3>📊 Relatórios</h3>
+        <p>Produtos mais vendidos, horários de pico e desempenho.</p>
+      </div>
+    </div>
+
+    <!-- Painel: Agenda -->
+    <div id="painelAgenda" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>📅 Agenda de Banho e Tosa</h2>
+      <div class="form-grupo"><label>Cliente</label><input type="text" id="agCliente" placeholder="Nome do cliente" /></div>
+      <div class="form-grupo"><label>Pet / Raça / Porte</label><input type="text" id="agPet" placeholder="Ex: Thor — Poodle — Grande" /></div>
+      <div class="form-grupo"><label>Serviço</label>
+        <select id="agServico">
+          <option>Banho</option><option>Banho e Tosa</option><option>Tosa Estética</option><option>Hidratação</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-grupo"><label>Data e Hora</label><input type="datetime-local" id="agData" /></div>
+      <div class="form-grupo"><label>Profissional Responsável</label><input type="text" id="agPro" placeholder="Quem vai atender" /></div>
+      <button class="btn btn-primario" onclick="agendar()">Agendar</button>
+      <div class="lista" id="listaAgenda"><div class="vazio">Nenhum agendamento.</div></div>
+    </div>
+
+    <!-- Painel: Clientes -->
+    <div id="painelClientes" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>🤝 Cadastro de Clientes</h2>
+      <div class="form-grupo"><label>Nome Completo</label><input type="text" id="clNome" /></div>
+      <div class="form-grupo"><label>Telefone / WhatsApp</label><input type="tel" id="clTel" placeholder="(00) 00000-0000" /></div>
+      <div class="form-grupo"><label>Endereço</label><input type="text" id="clEnd" /></div>
+      <div class="form-grupo"><label>Pets</label><textarea id="clPets" placeholder="Nome, raça, idade, alergias..."></textarea></div>
+      <button class="btn btn-primario" onclick="cadastrarCliente()">Salvar Cliente</button>
+      <div class="lista" id="listaClientes"><div class="vazio">Nenhum cliente cadastrado.</div></div>
+    </div>
+
+    <!-- Painel: Estoque -->
+    <div id="painelEstoque" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>📦 Estoque e Produtos</h2>
+      <div class="form-grupo"><label>Nome do Produto</label><input type="text" id="prNome" /></div>
+      <div class="form-grupo"><label>Categoria</label>
+        <select id="prCat"><option>Ração</option><option>Medicamento</option><option>Acessório</option><option>Brinquedo</option><option>Outro</option></select>
+      </div>
+      <div class="form-grupo"><label>Quantidade</label><input type="number" id="prQtd" min="1" /></div>
+      <div class="form-grupo"><label>Valor de Custo (R$)</label><input type="number" step="0.01" id="prCusto" /></div>
+      <div class="form-grupo"><label>Valor de Venda (R$)</label><input type="number" step="0.01" id="prVenda" /></div>
+      <div class="form-grupo"><label>Validade / Lote</label><input type="text" id="prVal" placeholder="DD/MM/AAAA — Lote X" /></div>
+      <button class="btn btn-primario" onclick="cadastrarProduto()">Salvar Produto</button>
+      <div class="lista" id="listaEstoque"><div class="vazio">Estoque vazio.</div></div>
+    </div>
+
+    <!-- Painel: Caixa -->
+    <div id="painelCaixa" class="painel">
+      <button class="btn-voltar" onclick="voltar()">← Voltar</button>
+      <h2>💰 Caixa e Financeiro</h2>
+      <div class="form-grupo"><label>Descrição</label><input type="text" id="cxDesc" placeholder="Ex: Banho Thor / Ração vendida" /></div>
+      <div class="form-grupo"><label>Tipo</label>
+        <select id="cxTipo"><option>Entrada (Venda/Serviço)</option><option>Saída (Despesa/Custo)</option></select>
+      </div>
+      <div class="form-grupo"><label>Valor R$</label><input type="number" step="0.01" id="cxValor" /></div>
+      <button class="btn btn-sucesso" onclick="registrarMovimento()">Registrar</button>
+      <div style="margin-top:1.5rem; padding:1rem; background:#f0fdf4; border-radius:8px;">
+        <strong>Saldo Atual:</strong> R$ <span id="saldo">0,00</span>
+      </div>
+      <div class="lista" id="listaCaixa"><div class="vazio">Sem movimentos.</div></div>
+    </div>
+
+    <!-- Painéis em desenvolvimento -->
+    <div id="painelServicos" class="painel"><button class="btn-voltar" onclick="voltar()">← Voltar</button><h2>✅ Serviços e Preços</h2><p>Cadastre seus serviços, valores e tempo médio. (em desenvolvimento)</p></div>
+    <div id="painelRelatorios" class="painel"><button class="btn-voltar" onclick="voltar()">← Voltar</button><h2>📊 Relatórios</h2><p>Análise de vendas, produtos e horários. (em desenvolvimento)</p></div>
+  </div>
+</div>
+
+<script>
+// 🔑 Chave de acesso
+const CHAVE_AUTORIZADA = "7846SIS2026SPBRAS8510";
+
+function verificarChave() {
+  const chave = document.getElementById("chaveAcesso").value.trim();
+  if (chave === CHAVE_AUTORIZADA) {
+    document.getElementById("telaLogin").style.display = "none";
+    document.getElementById("telaPrincipal").style.display = "block";
+    carregarTudo();
+  } else {
+    document.getElementById("msgErro").style.display = "block";
+  }
+}
+function sair() {
+  document.getElementById("telaPrincipal").style.display = "none";
+  document.getElementById("telaLogin").style.display = "flex";
+  document.getElementById("chaveAcesso").value = "";
+  document.getElementById("msgErro").style.display = "none";
+}
+
+let painelAtivo = null;
+function abrirModulo(nome) {
+  document.getElementById("gradeModulos").style.display = "none";
+  if (painelAtivo) document.getElementById("painel" + painelAtivo)?.classList.remove("ativo");
+  painelAtivo = nome.charAt(0).toUpperCase() + nome.slice(1);
+  document.getElementById("painel" + painelAtivo).classList.add("ativo");
+}
+function voltar() {
+  document.querySelectorAll(".painel").forEach(p => p.classList.remove("ativo"));
+  document.getElementById("gradeModulos").style.display = "grid";
+  painelAtivo = null;
+}
+
+// 📅 Agenda
+async function agendar() {
+  const dados = {
+    cliente: document.getElementById("agCliente").value,
+    pet: document.getElementById("agPet").value,
+    servico: document.getElementById("agServico").value,
+    data: document.getElementById("agData").value,
+    profissional: document.getElementById("agPro").value,
+    status: "Agendado"
+  };
+  const { error } = await supabase.from("agenda").insert([dados]);
+  if (error) return alert("Erro: " + error.message);
+  limparCampos(["agCliente","agPet","agServico","agData","agPro"]);
+  carregarAgenda();
+}
+async function carregarAgenda() {
+  const { data } = await supabase.from("agenda").select("*").order("data", {asc:true});
+  const el = document.getElementById("listaAgenda");
+  el.innerHTML = data?.length ? data.map(a => `<div class="item-lista">
+    <strong>${a.cliente}</strong> — ${a.pet}
+    <span class="tag tag-agendado">${a.status}</span><br>
+    ${a.servico} • ${a.profissional || "Sem responsável"}<br>
+    <small>${new Date(a.data).toLocaleString("pt-BR")}</small>
+  </div>`).join("") : `<div class="vazio">Nenhum agendamento.</div>`;
+  document.getElementById("qtdAgenda").textContent = data?.length || 0;
+}
+
+// 🤝 Clientes
+async function cadastrarCliente() {
+  const dados = {
+    nome: document.getElementById("clNome").value,
+    telefone: document.getElementById("clTel").value,
+    endereco: document.getElementById("clEnd").value,
+    pets: document.getElementById("clPets").value
+  };
+  const { error } = await supabase.from("clientes").insert([dados]);
+  if (error) return alert("Erro: " + error.message);
+  limparCampos(["clNome","clTel","clEnd","clPets"]);
+  carregarClientes();
+}
+async function carregarClientes() {
+  const { data } = await supabase.from("clientes").select("*").order("id", {asc:false});
+  const el = document.getElementById("listaClientes");
+  el.innerHTML = data?.length ? data.map(c => `<div class="item-lista">
+    <strong>${c.nome}</strong><br>📞 ${c.telefone || "Sem telefone"}<br>🐾 ${c.pets || "Sem pets cadastrados"}
+  </div>`).join("") : `<div class="vazio">Nenhum cliente.</div>`;
+  document.getElementById("qtdClientes").textContent = data?.length || 0;
+}
+
+// 📦 Estoque
+async function cadastrarProduto() {
+  const dados = {
+    nome: document.getElementById("prNome").value,
+    categoria: document.getElementById("prCat").value,
+    quantidade: Number(document.getElementById("prQtd").value),
+    custo: Number(document.getElementById("prCusto").value),
+    venda: Number(document.getElementById("prVenda").value),
+    validade_lote: document.getElementById("prVal").value
+  };
+  const { error } = await supabase.from("estoque").insert([dados]);
+  if (error) return alert("Erro: " + error.message);
+  limparCampos(["prNome","prCat","prQtd","prCusto","prVenda","prVal"]);
+  carregarEstoque();
+}
+async function carregarEstoque() {
+  const { data } = await supabase.from("estoque").select("*");
+  const el = document.getElementById("listaEstoque");
+  el.innerHTML = data?.length ? data.map(p => `<div class="item-lista">
+    <strong>${p.nome}</strong> — ${p.categoria}
+    <span style="float:right; font-weight:bold">${p.quantidade} un</span><br>
+    Custo: R$${p.custo?.toFixed(2)} • Venda: R$${p.venda?.toFixed(2)}
+    <br><small>Val/Lote: ${p.validade_lote || "Não informado"}</small>
+  </div>`).join("") : `<div class="vazio">Estoque vazio.</div>`;
+  document.getElementById("qtdEstoque").textContent = data?.length || 0;
+}
+
+// 💰 Caixa
+async function registrarMovimento() {
+  const tipo = document.getElementById("cxTipo").value.includes("Entrada") ? "Entrada" : "Saída";
+  const dados = {
+    descricao: document.getElementById("cxDesc").value,
+    tipo: tipo,
+    valor: Number(document.getElementById("cxValor").value),
+    data: new Date().toLocaleString("pt-BR")
+  };
+  const { error } = await supabase.from("caixa").insert([dados]);
+  if (error) return alert("Erro: " + error.message);
+  limparCampos(["cxDesc","cxTipo","cxValor"]);
+  carregarCaixa();
+}
+async function carregarCaixa() {
+  const { data } = await supabase.from("caixa").select("*").order("id", {asc:false});
+  let saldo = 0;
+  data?.forEach(m => saldo += m.tipo === "Entrada" ? m.valor : -m.valor);
+  document.getElementById("saldo").textContent = saldo.toFixed(2).replace(".",",");
+  const el = document.getElementById("listaCaixa");
+  el.innerHTML = data?.length ? data.map(m => `<div class="item-lista">
+    ${m.tipo === "Entrada" ? "🟢" : "🔴"} ${m.descricao}
+    <span style="float:right">${m.tipo} — R$ ${m.valor?.toFixed(2)}</span><br>
+    <small>${m.data}</small>
+  </div>`).join("") : `<div class="vazio">Sem movimentos.</div>`;
+}
+
+function limparCampos(ids) { ids.forEach(id => { const el=document.getElementById(id); if(el) el.value=""; }); }
+async function carregarTudo() {
+  await carregarAgenda();
+  await carregarClientes();
+  await carregarEstoque();
+  await carregarCaixa();
+  document.getElementById("qtdServicos").textContent = "0";
+}
+
+document.getElementById("chaveAcesso").addEventListener("keypress", e => e.key === "Enter" && verificarChave());
+</script>
+</body>
+</html>
