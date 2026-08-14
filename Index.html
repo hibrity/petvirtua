@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetVirtua — Acesso</title>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+    window.supabase = createClient(
+      "https://xnbysaincrirvsykqgqj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI"
+    )
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+
+    .tela-acesso { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem 1rem; }
+
+    .caixa-acesso {
+      background: rgba(255,255,255,.98); backdrop-filter: blur(20px);
+      padding: 2.2rem 1.8rem; border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,.3);
+      width: 100%; max-width: 480px; border: 1px solid rgba(255,255,255,.25);
+    }
+    .caixa-acesso.larga { max-width: 720px; }
+
+    .caixa-acesso h1 {
+      background: linear-gradient(135deg,#667eea,#764ba2);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: .4rem;
+    }
+    .slogan { text-align: center; color: #64748b; font-size: .95rem; margin-bottom: 1.8rem; font-weight: 500; }
+
+    .secao { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 1.6rem 0 .9rem; padding-bottom: .5rem; border-bottom: 2px solid #e0e7ff; }
+    .secao:first-of-type { margin-top: 0; }
+
+    .info-box {
+      background: linear-gradient(135deg,#f0f9ff,#e0f2fe); border: 2px solid #bae6fd;
+      border-radius: 12px; padding: .8rem 1rem; font-size: .85rem; color: #0369a1; margin-bottom: 1.1rem; line-height: 1.5;
+    }
+
+    .campo { margin-bottom: .9rem; }
+    .campo label { display: block; font-size: .85rem; font-weight: 700; color: #475569; margin-bottom: .35rem; }
+    .campo label .ob { color: #ef4444; }
+
+    input, select, textarea {
+      width: 100%; padding: .85rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px;
+      font-size: 1rem; background: #fafafa; transition: all .3s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 4px rgba(102,126,234,.12); }
+    textarea { resize: vertical; min-height: 70px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .full { grid-column: 1 / -1; }
+    @media (max-width: 620px) { .grid-2 { grid-template-columns: 1fr; } .caixa-acesso { padding: 1.8rem 1.2rem; } }
+
+    .status-cep { font-size: .8rem; color: #667eea; font-weight: 600; margin-top: .3rem; min-height: 1rem; display: block; }
+
+    .btn-acesso {
+      width: 100%; padding: 1rem; background: linear-gradient(135deg,#667eea,#764ba2);
+      color: white; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800;
+      cursor: pointer; transition: all .3s; box-shadow: 0 10px 25px -5px rgba(102,126,234,.45); margin-top: .5rem;
+    }
+    .btn-acesso:hover { transform: translateY(-2px); box-shadow: 0 15px 35px -5px rgba(102,126,234,.55); }
+    .btn-acesso:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .erro, .sucesso { display: none; margin-top: 1rem; padding: .9rem; border-radius: 12px; font-weight: 600; font-size: .9rem; text-align: center; }
+    .erro { background: #fee2e2; color: #dc2626; }
+    .sucesso { background: #dcfce7; color: #16a34a; }
+
+    .link-troca { text-align: center; margin-top: 1.4rem; color: #64748b; font-size: .95rem; }
+    .link-troca span { color: #667eea; font-weight: 800; cursor: pointer; }
+    .link-troca span:hover { text-decoration: underline; }
+
+    .loading { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: white; animation: spin .8s linear infinite; vertical-align: middle; margin-right: .4rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="tela-acesso" id="telaLogin">
+  <div class="caixa-acesso">
+    <h1>🐾 PetVirtua</h1>
+    <p class="slogan">Sistema Completo de Gestão para Pet Shops</p>
+    <div class="campo"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" /></div>
+    <div class="campo"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••" /></div>
+    <button class="btn-acesso" onclick="fazerLogin()">🔑 Entrar no Sistema</button>
+    <div class="erro" id="msgErroLogin">❌ E-mail ou senha incorretos!</div>
+    <div class="link-troca">Novo por aqui? <span onclick="mostrarTela('cadastro')">Cadastre seu Pet Shop</span></div>
+  </div>
+</div>
+
+<!-- CADASTRO -->
+<div class="tela-acesso" id="telaCadastro" style="display:none;">
+  <div class="caixa-acesso larga">
+    <h1>🏪 Cadastrar Pet Shop</h1>
+    <p class="slogan">Preencha os dados abaixo para criar sua conta</p>
+
+    <div class="secao">👤 Dados do Responsável</div>
+    <div class="info-box">💡 Use um e-mail válido — ele será seu login para acessar o painel.</div>
+    <div class="grid-2">
+      <div class="campo"><label>Nome Completo <span class="ob">*</span></label><input type="text" id="cadRespNome" placeholder="Seu nome" /></div>
+      <div class="campo"><label>CPF</label><input type="text" id="cadRespCpf" placeholder="000.000.000-00" /></div>
+      <div class="campo"><label>E-mail <span class="ob">*</span></label><input type="email" id="cadRespEmail" placeholder="seu@email.com" /></div>
+      <div class="campo"><label>Telefone / WhatsApp <span class="ob">*</span></label><input type="tel" id="cadRespTel" placeholder="(00) 00000-0000" /></div>
+      <div class="campo"><label>Criar Senha <span class="ob">*</span></label><input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres" /></div>
+      <div class="campo"><label>Confirmar Senha <span class="ob">*</span></label><input type="password" id="cadSenhaConfirm" placeholder="Repita a senha" /></div>
+    </div>
+
+    <div class="secao">🏪 Dados do Pet Shop</div>
+    <div class="grid-2">
+      <div class="campo"><label>Nome do Pet Shop <span class="ob">*</span></label><input type="text" id="cadLojaNome" placeholder="Ex: Pet Shop Amigo Fiel" /></div>
+      <div class="campo"><label>CNPJ</label><input type="text" id="cadLojaCnpj" placeholder="00.000.000/0000-00" /></div>
+      <div class="campo"><label>Telefone da Loja</label><input type="tel" id="cadLojaTel" placeholder="(00) 0000-0000" /></div>
+      <div class="campo"><label>WhatsApp da Loja</label><input type="tel" id="cadLojaWhats" placeholder="(00) 00000-0000" /></div>
+      <div class="campo full"><label>E-mail da Loja</label><input type="email" id="cadLojaEmail" placeholder="contato@petshop.com" /></div>
+    </div>
+
+    <div class="secao">📍 Endereço</div>
+    <div class="info-box">📮 Digite o CEP e o endereço é preenchido automaticamente — você só informa o número!</div>
+    <div class="grid-2">
+      <div class="campo"><label>CEP</label><input type="text" id="cadCep" placeholder="00000-000" inputmode="numeric" /><span class="status-cep" id="statusCep"></span></div>
+      <div class="campo"><label>Número <span class="ob">*</span></label><input type="text" id="cadNumero" placeholder="Ex: 123" /></div>
+      <div class="campo full"><label>Rua / Avenida</label><input type="text" id="cadRua" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Complemento</label><input type="text" id="cadComplemento" placeholder="Sala, andar..." /></div>
+      <div class="campo"><label>Bairro</label><input type="text" id="cadBairro" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Cidade <span class="ob">*</span></label><input type="text" id="cadCidade" placeholder="Preenchido pelo CEP" /></div>
+      <div class="campo"><label>Estado <span class="ob">*</span></label>
+        <select id="cadEstado">
+          <option value="">UF</option>
+          <option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="secao">📋 Informações do Negócio</div>
+    <div class="grid-2">
+      <div class="campo full"><label>Descrição do Pet Shop</label><textarea id="cadDescricao" placeholder="Serviços oferecidos, diferenciais..."></textarea></div>
+      <div class="campo"><label>Horário de Funcionamento</label><input type="text" id="cadHorario" placeholder="Seg-Sex 8h-18h" /></div>
+      <div class="campo"><label>Instagram</label><input type="text" id="cadInstagram" placeholder="@seupetshop" /></div>
+      <div class="campo full"><label>Site</label><input type="url" id="cadSite" placeholder="https://..." /></div>
+    </div>
+
+    <button class="btn-acesso" id="btnCadastrar" onclick="cadastrarPetShop()">🐾 Cadastrar Meu Pet Shop</button>
+    <div class="erro" id="msgErroCadastro"></div>
+    <div class="sucesso" id="msgSucessoCadastro"></div>
+    <div class="link-troca">Já tem conta? <span onclick="mostrarTela('login')">Faça login</span></div>
+  </div>
+</div>
+
+<script>
+function mostrarTela(tela) {
+  document.getElementById("telaLogin").style.display = "none";
+  document.getElementById("telaCadastro").style.display = "none";
+  document.getElementById(tela === 'login' ? "telaLogin" : "telaCadastro").style.display = "flex";
+  window.scrollTo(0, 0);
+}
+
+// Redireciona pelo tipo de usuário
+async function redirecionarPorTipo(userId) {
+  const { data: profile } = await supabase.from("profiles").select("tipo").eq("id", userId).single();
+  window.location.href = (profile?.tipo === "admin") ? "admin.html" : "cliente.html";
+}
+
+// ==================== MÁSCARAS ====================
+function mascararCep(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 8);
+    el.value = v.length > 5 ? v.slice(0, 5) + "-" + v.slice(5) : v;
+    if (v.length === 8) buscarCep(v);
+    else document.getElementById("statusCep").textContent = "";
+  });
+}
+function mascararTelefone(el) {
+  el.addEventListener("input", () => {
+    let v = el.value.replace(/\D/g, "").slice(0, 11);
+    if (v.length > 10)      v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+    else if (v.length > 6)  v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+    else if (v.length > 2)  v = v.replace(/(\d{2})(\d{0,6})/, "($1) $2");
+    el.value = v;
+  });
+}
+mascararCep(document.getElementById("cadCep"));
+mascararTelefone(document.getElementById("cadRespTel"));
+mascararTelefone(document.getElementById("cadLojaTel"));
+mascararTelefone(document.getElementById("cadLojaWhats"));
+
+// ==================== CEP (ViaCEP) ====================
+async function buscarCep(cep) {
+  const status = document.getElementById("statusCep");
+  status.textContent = "🔍 Buscando endereço...";
+  try {
+    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resp.json();
+    if (dados.erro) { status.textContent = "⚠️ CEP não encontrado — preencha manualmente."; return; }
+    document.getElementById("cadRua").value = dados.logradouro || "";
+    document.getElementById("cadBairro").value = dados.bairro || "";
+    document.getElementById("cadCidade").value = dados.localidade || "";
+    document.getElementById("cadEstado").value = dados.uf || "";
+    if (dados.complemento) document.getElementById("cadComplemento").value = dados.complemento;
+    status.textContent = "✅ Endereço encontrado! Agora informe apenas o número.";
+    document.getElementById("cadNumero").focus();
+  } catch (e) { status.textContent = "⚠️ Falha na busca — preencha manualmente."; }
+}
+
+// ==================== LOGIN ====================
+async function fazerLogin() {
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const senha = document.getElementById("loginSenha").value;
+  const erro = document.getElementById("msgErroLogin");
+  erro.style.display = "none";
+  if (!email || !senha) { erro.style.display = "block"; return; }
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if (error || !data.user) { erro.style.display = "block"; return; }
+
+  await redirecionarPorTipo(data.user.id);
+}
+
+// ==================== CADASTRO PET SHOP ====================
+async function cadastrarPetShop() {
+  const btn = document.getElementById("btnCadastrar");
+  const erro = document.getElementById("msgErroCadastro");
+  const sucesso = document.getElementById("msgSucessoCadastro");
+  erro.style.display = "none"; sucesso.style.display = "none";
+
+  const d = {
+    resp_nome: val("cadRespNome"), resp_cpf: val("cadRespCpf"),
+    resp_email: val("cadRespEmail").toLowerCase(), resp_tel: val("cadRespTel"),
+    senha: document.getElementById("cadSenha").value, senha2: document.getElementById("cadSenhaConfirm").value,
+    loja_nome: val("cadLojaNome"), loja_cnpj: val("cadLojaCnpj"),
+    loja_tel: val("cadLojaTel"), loja_whats: val("cadLojaWhats"), loja_email: val("cadLojaEmail"),
+    cep: val("cadCep"), rua: val("cadRua"), numero: val("cadNumero"), complemento: val("cadComplemento"),
+    bairro: val("cadBairro"), cidade: val("cadCidade"), estado: document.getElementById("cadEstado").value,
+    descricao: val("cadDescricao"), horario: val("cadHorario"), instagram: val("cadInstagram"), site: val("cadSite")
+  };
+
+  if (!d.resp_nome || !d.resp_email || !d.resp_tel || !d.loja_nome || !d.cidade || !d.estado || !d.numero) return falha("❌ Preencha todos os campos obrigatórios (*)!");
+  if (d.senha.length < 6) return falha("❌ A senha deve ter no mínimo 6 caracteres!");
+  if (d.senha !== d.senha2) return falha("❌ As senhas não coincidem!");
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Cadastrando...';
+
+  try {
+    const { data: auth, error: authErr } = await supabase.auth.signUp({
+      email: d.resp_email, password: d.senha,
+      options: { data: { nome: d.resp_nome, tipo: 'admin' } }
+    });
+    if (authErr) throw new Error(authErr.message);
+    const userId = auth.user.id;
+
+    await supabase.from("profiles").upsert({ id: userId, nome: d.resp_nome, email: d.resp_email, telefone: d.resp_tel, tipo: 'admin' });
+
+    const { error: shopErr } = await supabase.from("petshops").insert([{
+      usuario_id: userId, responsavel_nome: d.resp_nome, responsavel_email: d.resp_email,
+      responsavel_telefone: d.resp_tel, responsavel_cpf: d.resp_cpf,
+      loja_nome: d.loja_nome, loja_cnpj: d.loja_cnpj, loja_telefone: d.loja_tel,
+      loja_whatsapp: d.loja_whats, loja_email: d.loja_email,
+      cep: d.cep, rua: d.rua, numero: d.numero, complemento: d.complemento,
+      bairro: d.bairro, cidade: d.cidade, estado: d.estado,
+      descricao: d.descricao, horario_funcionamento: d.horario, instagram: d.instagram, site: d.site
+    }]);
+    if (shopErr) throw new Error(shopErr.message);
+
+    const { data: login, error: loginErr } = await supabase.auth.signInWithPassword({ email: d.resp_email, password: d.senha });
+    if (!loginErr && login.user) {
+      sucesso.textContent = "✅ Pet Shop cadastrado! Entrando no painel...";
+      sucesso.style.display = "block";
+      setTimeout(() => window.location.href = "admin.html", 1200);
+    } else {
+      sucesso.textContent = "✅ Conta criada! Confirme seu e-mail e faça login.";
+      sucesso.style.display = "block";
+      setTimeout(() => mostrarTela('login'), 2000);
+    }
+  } catch (e) {
+    falha("❌ Erro: " + e.message);
+    btn.disabled = false;
+    btn.innerHTML = "🐾 Cadastrar Meu Pet Shop";
+  }
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  function falha(msg) { erro.textContent = msg; erro.style.display = "block"; erro.scrollIntoView({ behavior: "smooth", block: "center" }); }
+}
+
+document.getElementById("loginSenha").addEventListener("keypress", e => e.key === "Enter" && fazerLogin());
+
+// Sessão existente → redireciona pelo tipo
+document.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) await redirecionarPorTipo(session.user.id);
+});
+</script>
+</body>
+</html>
