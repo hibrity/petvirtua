@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PetVirtua — Configurações</title>
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+  window.supabase = createClient(
+    "https://xnbysaincrirvsykqgqj.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuYnlzYWluY3JpcnZzeWtxZ3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NjY5MjcsImV4cCI6MjEwMjI0MjkyN30.cmHU4-80b71mRQ71paEGQHRcnb08Yd8mJK0AKexRHsI",
+    { auth: { persistSession: true, autoRefreshToken: true } }
+  );
+</script>
+<style>
+:root { --primary: #667eea; --primary-dark: #764ba2; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --text-soft: #64748b; --border: #e2e8f0; --sidebar: #0f172a; --sidebar-hover: #1e293b; --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04); --shadow-lg: 0 10px 30px rgba(0,0,0,.1); }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+body { background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; font-size: .95rem; }
+.connection-bar { position: fixed; top: 0; left: 0; right: 0; padding: .4rem; text-align: center; font-size: .78rem; font-weight: 700; z-index: 9998; display: none; }
+.connection-bar.offline { background: var(--danger); color: white; display: block; }
+.loading-full { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 1rem; }
+.spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.sidebar { background: var(--sidebar); color: white; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 1.5rem 0; overflow-y: auto; }
+.brand { display: flex; align-items: center; gap: .7rem; padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+.brand-logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: grid; place-items: center; font-size: 1.3rem; }
+.brand-name { font-size: 1.15rem; font-weight: 800; letter-spacing: -.5px; }
+.brand-sub { font-size: .72rem; color: #94a3b8; font-weight: 500; }
+.nav-group { padding: 1rem 0 .5rem; }
+.nav-title { font-size: .7rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; padding: 0 1.5rem .5rem; font-weight: 700; }
+.nav-item { display: flex; align-items: center; gap: .7rem; padding: .7rem 1.5rem; color: #cbd5e1; font-size: .9rem; font-weight: 500; transition: all .2s; border-left: 3px solid transparent; cursor: pointer; text-decoration: none; }
+.nav-item:hover { background: var(--sidebar-hover); color: white; }
+.nav-item.active { background: var(--sidebar-hover); color: white; border-left-color: var(--primary); }
+.nav-item .icon { font-size: 1.1rem; width: 22px; text-align: center; }
+.nav-item .badge { margin-left: auto; background: var(--primary); color: white; font-size: .65rem; padding: .15rem .5rem; border-radius: 10px; font-weight: 700; }
+.sidebar-footer { margin-top: auto; padding: 1rem 1.5rem 0; border-top: 1px solid rgba(255,255,255,.08); }
+.user-card { display: flex; align-items: center; gap: .7rem; padding: .7rem; border-radius: 10px; background: rgba(255,255,255,.05); }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: grid; place-items: center; font-weight: 800; }
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: .85rem; font-weight: 700; }
+.user-role { font-size: .7rem; color: #94a3b8; }
+.user-logout { color: #94a3b8; font-size: 1.1rem; padding: .3rem; border-radius: 6px; }
+.user-logout:hover { color: white; background: rgba(239,68,68,.2); }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar { background: white; padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+.btn-menu { display: none; font-size: 1.3rem; padding: .3rem .6rem; border-radius: 8px; background: var(--bg); }
+.topbar-title h2 { font-size: 1.3rem; font-weight: 800; }
+.topbar-title p { font-size: .8rem; color: var(--text-soft); margin-top: .1rem; }
+.content { padding: 2rem; flex: 1; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.card-header { padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.card-header h3 { font-size: 1rem; font-weight: 800; }
+.card-body { padding: 1.3rem; }
+.field { margin-bottom: .9rem; }
+.field label { display: block; font-size: .8rem; font-weight: 700; color: #475569; margin-bottom: .35rem; }
+.field .req { color: var(--danger); }
+.field input, .field select, .field textarea { width: 100%; padding: .7rem .9rem; border: 2px solid var(--border); border-radius: 10px; background: white; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); }
+.field textarea { resize: vertical; min-height: 70px; }
+.field-grid { display: grid; gap: .9rem; grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 640px) { .field-grid { grid-template-columns: 1fr; } }
+.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; transition: all .2s; }
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 12px rgba(102,126,234,.3); }
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-ghost { background: white; border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--bg); }
+.btn.loading::after { content:''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; margin-left: .3rem; }
+.btn.loading { pointer-events: none; opacity: .8; }
+.toast-wrap { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: .6rem; }
+.toast { background: white; padding: .9rem 1.1rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,.15); min-width: 260px; display: flex; gap: .7rem; border-left: 4px solid var(--info); }
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warning { border-left-color: var(--warning); }
+.toast .ico { font-size: 1.2rem; }
+.toast .msg b { display: block; font-size: .85rem; }
+.toast .msg span { color: var(--text-soft); font-size: .8rem; }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: -280px; z-index: 1001; transition: left .3s; width: 260px; }
+  .sidebar.open { left: 0; }
+  .btn-menu { display: grid; place-items: center; }
+  .content { padding: 1.2rem; }
+  .topbar { padding: 1rem 1.2rem; }
+  .sidebar-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: none; }
+  .sidebar-backdrop.open { display: block; }
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="connection-bar" id="connectionBar">⚠️ Você está offline.</div>
+<div class="loading-full" id="loading"><div class="spinner"></div><div>Carregando...</div></div>
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+<div class="app hidden" id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🐾</div>
+      <div><div class="brand-name">PetVirtua</div><div class="brand-sub">Gestão Profissional</div></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-title">Principal</div>
+      <a href="index.html" class="nav-item"><span class="icon">📊</span> Dashboard</a>
+      <a href="agenda.html" class="nav-item"><span class="icon">📅</span> Agenda <span class="badge" id="agendaHoje">0</span></a>
+      <a href="chat.html" class="nav-item"><span class="icon">💬</span> Chat <span class="badge" id="badgeChatAdmin">0</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-title">Operação</div>
+      <a href="clientes.html" class="nav-item"><span class="icon">👥</span> Clientes</a>
+      <a href="pets.html" class="nav-item"><span class="icon">🐕</span> Pets</a>
+      <a href="servicos.html" class="nav-item"><span class="icon">✂️</span> Serviços</a>
+      <a href="os.html" class="nav-item"><span class="icon">🧾</span> Ordens de Serviço</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-title">Comercial</div>
+      <a href="produtos.html" class="nav-item"><span class="icon">📦</span> Produtos / Estoque</a>
+      <a href="vendas.html" class="nav-item"><span class="icon">💰</span> Vendas / PDV</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-title">Gestão</div>
+      <a href="financeiro.html" class="nav-item"><span class="icon">💳</span> Financeiro</a>
+      <a href="funcionarios.html" class="nav-item"><span class="icon">👨‍💼</span> Funcionários</a>
+      <a href="relatorios.html" class="nav-item"><span class="icon">📈</span> Relatórios</a>
+      <a href="config.html" class="nav-item active"><span class="icon">⚙️</span> Configurações</a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-role">Administrador</div>
+        </div>
+        <button class="user-logout" onclick="logout()">🚪</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="btn-menu" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title"><h2>Configurações</h2><p>Dados do Pet Shop</p></div>
+    </div>
+    <div class="content" id="pageContent"></div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+function sanitize(str) { if (str === null || str === undefined) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+function toast(title, msg = '', type = 'info') {
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="ico">${icons[type]}</div><div class="msg"><b>${sanitize(title)}</b><span>${sanitize(msg)}</span></div>`;
+  $('#toastWrap').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+function toggleSidebar() { $('#sidebar').classList.toggle('open'); $('#sidebarBackdrop').classList.toggle('open'); }
+
+function mask(el, fn) { if (!el) return; el.addEventListener('input', () => { el.value = fn(el.value); }); return el; }
+const masks = {
+  cnpj: v => v.replace(/\D/g, '').slice(0, 14).replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2'),
+  tel: v => { v = v.replace(/\D/g, '').slice(0, 11); if (v.length > 10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3'); if (v.length > 6) return v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3'); if (v.length > 2) return v.replace(/(\d{2})(\d{0,6})/, '($1) $2'); return v; },
+  cep: v => { v = v.replace(/\D/g, '').slice(0, 8); return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v; }
+};
+
+const App = { user: null, loja: null, online: navigator.onLine };
+
+async function sbCall(fn, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try { const result = await fn(); if (result.error) throw result.error; return result; }
+    catch (e) { if (i === retries || !App.online) throw e; await new Promise(r => setTimeout(r, 800 * (i + 1))); }
+  }
+}
+
+async function checkAuth() {
+  try {
+    const { data: { session } } = await sbCall(() => supabase.auth.getSession());
+    if (!session) { window.location.href = 'login.html'; return; }
+    const { data: loja } = await sbCall(() => supabase.from('petshops').select('*').eq('usuario_id', session.user.id).maybeSingle());
+    if (!loja) { await supabase.auth.signOut(); window.location.href = 'login.html'; return; }
+    App.user = session.user; App.loja = loja;
+    const nome = session.user.user_metadata?.nome || session.user.email;
+    $('#userName').textContent = nome;
+    $('#userAvatar').textContent = nome[0].toUpperCase();
+    $('#loading').remove();
+    $('#app').classList.remove('hidden');
+    renderConfig();
+    atualizarBadges();
+  } catch (e) { toast('Erro', e.message, 'error'); setTimeout(() => window.location.href = 'login.html', 2000); }
+}
+
+async function logout() { if (!confirm('Sair?')) return; await supabase.auth.signOut(); window.location.href = 'login.html'; }
+
+function atualizarBadges() {
+  const hoje = new Date().toISOString().slice(0, 10);
+  const agendaHoje = 0;
+  $('#agendaHoje').textContent = agendaHoje;
+  $('#agendaHoje').style.display = agendaHoje > 0 ? 'inline-block' : 'none';
+}
+
+function renderConfig() {
+  const l = App.loja;
+  $('#pageContent').innerHTML = `
+    <div class="card" style="max-width:800px;">
+      <div class="card-header"><h3>🏪 Dados do Pet Shop</h3></div>
+      <div class="card-body">
+        <div class="field" style="background:#f0f9ff;padding:1rem;border-radius:10px;margin-bottom:1.2rem;">
+          <label style="color:#1e40af;font-weight:800;margin-bottom:.5rem;">🔑 Código de Convite para Clientes</label>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <input id="cf_codigo" value="${sanitize(l?.codigo_convite || '')}" readonly style="flex:1;background:white;font-family:monospace;font-weight:800;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;">
+            <button class="btn btn-ghost" onclick="gerarNovoCodigo()">🔄</button>
+            <button class="btn btn-ghost" onclick="copiarCodigo()">📋</button>
+          </div>
+          <small style="color:var(--text-soft);margin-top:.5rem;display:block;">Compartilhe este código com seus clientes para que se cadastrem no app.</small>
+        </div>
+        <div class="field-grid">
+          <div class="field"><label>Nome <span class="req">*</span></label><input id="cf_nome" maxlength="100" value="${sanitize(l?.loja_nome || '')}"></div>
+          <div class="field"><label>CNPJ</label><input id="cf_cnpj" value="${sanitize(l?.loja_cnpj || '')}"></div>
+          <div class="field"><label>Telefone</label><input id="cf_tel" value="${sanitize(l?.loja_telefone || '')}"></div>
+          <div class="field"><label>WhatsApp</label><input id="cf_wpp" value="${sanitize(l?.loja_whatsapp || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>E-mail</label><input id="cf_email" type="email" value="${sanitize(l?.loja_email || '')}"></div>
+          <div class="field"><label>CEP</label><input id="cf_cep" value="${sanitize(l?.cep || '')}"></div>
+          <div class="field"><label>Número</label><input id="cf_num" maxlength="10" value="${sanitize(l?.numero || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Rua</label><input id="cf_rua" maxlength="200" value="${sanitize(l?.rua || '')}"></div>
+          <div class="field"><label>Bairro</label><input id="cf_bairro" maxlength="80" value="${sanitize(l?.bairro || '')}"></div>
+          <div class="field"><label>Cidade</label><input id="cf_cidade" maxlength="80" value="${sanitize(l?.cidade || '')}"></div>
+          <div class="field"><label>Estado</label><input id="cf_estado" maxlength="2" value="${sanitize(l?.estado || '')}"></div>
+          <div class="field"><label>Horário</label><input id="cf_hor" maxlength="80" value="${sanitize(l?.horario_funcionamento || '')}"></div>
+          <div class="field" style="grid-column:1/-1;"><label>Descrição</label><textarea id="cf_desc" maxlength="500">${sanitize(l?.descricao || '')}</textarea></div>
+        </div>
+        <button class="btn btn-primary" id="btnSalvarConfig" onclick="salvarConfig()">💾 Salvar Alterações</button>
+      </div>
+    </div>
+  `;
+  if ($('#cf_cnpj')) mask($('#cf_cnpj'), masks.cnpj);
+  if ($('#cf_tel')) mask($('#cf_tel'), masks.tel);
+  if ($('#cf_wpp')) mask($('#cf_wpp'), masks.tel);
+  if ($('#cf_cep')) mask($('#cf_cep'), masks.cep);
+}
+
+async function salvarConfig() {
+  const btn = $('#btnSalvarConfig');
+  btn?.classList.add('loading');
+  try {
+    const d = {
+      loja_nome: $('#cf_nome').value.slice(0, 100),
+      loja_cnpj: $('#cf_cnpj').value,
+      loja_telefone: $('#cf_tel').value,
+      loja_whatsapp: $('#cf_wpp').value,
+      loja_email: $('#cf_email').value,
+      cep: $('#cf_cep').value,
+      numero: $('#cf_num').value.slice(0, 10),
+      rua: $('#cf_rua').value.slice(0, 200),
+      bairro: $('#cf_bairro').value.slice(0, 80),
+      cidade: $('#cf_cidade').value.slice(0, 80),
+      estado: $('#cf_estado').value.toUpperCase().slice(0, 2),
+      horario_funcionamento: $('#cf_hor').value.slice(0, 80),
+      descricao: $('#cf_desc').value.slice(0, 500)
+    };
+    await sbCall(() => supabase.from('petshops').update(d).eq('id', App.loja.id));
+    App.loja = { ...App.loja, ...d };
+    toast('Salvo!', 'Dados atualizados', 'success');
+  } catch (e) { toast('Erro', e.message, 'error'); }
+  finally { btn?.classList.remove('loading'); }
+}
+
+async function gerarNovoCodigo() {
+  const novo = 'PET' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  try {
+    await sbCall(() => supabase.from('petshops').update({ codigo_convite: novo }).eq('id', App.loja.id));
+    App.loja.codigo_convite = novo;
+    $('#cf_codigo').value = novo;
+    toast('Gerado', novo, 'success');
+  } catch (e) { toast('Erro', e.message, 'error'); }
+}
+
+function copiarCodigo() {
+  const val = $('#cf_codigo').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => toast('Copiado!', 'Código na área de transferência', 'success'));
+}
+
+document.addEventListener('DOMContentLoaded', checkAuth);
+</script>
+</body>
+</html>
