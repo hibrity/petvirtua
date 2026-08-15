@@ -107,27 +107,6 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
 
-/* ============ CARD DE RESUMO (ÚNICO, NA PARTE INFERIOR) ============ */
-.summary-card { margin-top: 1.5rem; background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-.summary-card .card-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
-.summary-card .card-header h3 { color: white; }
-.summary-card .card-header small { color: rgba(255,255,255,.85); }
-.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-.summary-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all .25s; display: flex; align-items: center; gap: .8rem; position: relative; overflow: hidden; }
-.summary-item::before { content:''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); transform: scaleY(0); transition: transform .25s; }
-.summary-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
-.summary-item:hover::before { transform: scaleY(1); }
-.summary-icon { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0; }
-.summary-content { min-width: 0; flex: 1; }
-.summary-title { font-size: .72rem; color: var(--text-soft); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.summary-value { font-size: 1.15rem; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: .1rem; }
-.summary-sub { font-size: .7rem; color: var(--text-soft); margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.summary-sub strong { color: var(--success); font-weight: 700; }
-.summary-sub.warn strong { color: var(--warning); }
-.summary-sub.danger strong { color: var(--danger); }
-@media (max-width: 900px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 500px) { .summary-grid { grid-template-columns: 1fr; } }
-
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .card-header { padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .card-header h3 { font-size: 1rem; font-weight: 800; }
@@ -343,7 +322,6 @@ tr:hover td { background: #fafbfc; }
 <script>
 /* ================================================================
    PETVIRTUA — SISTEMA ROBUSTO PARA PET SHOPS
-   Versão: 2.0 — Com camadas de proteção, cache, retry e monitoramento
 ================================================================= */
 
 const App = {
@@ -565,7 +543,6 @@ async function carregarTudo() {
 
   App.data = { clientes, pets, servicos, produtos, funcionarios, agendamentos, vendas, financeiro, os, conversas, mensagens: [] };
 
-  // Salvar no cache
   try {
     sessionStorage.setItem('petvirtua_cache_' + id, JSON.stringify({ ts: Date.now(), data: App.data }));
   } catch (e) {}
@@ -602,7 +579,6 @@ async function atualizarTudo() {
 }
 
 function iniciarAutoRefresh() {
-  // Atualização automática a cada 5 minutos se estiver online
   setInterval(() => {
     if (App.online && document.visibilityState === 'visible') {
       carregarTudo().then(() => {
@@ -645,7 +621,6 @@ function renderPage(page) {
   const fn = Page[page];
   if (fn) {
     try {
-      // Destrói charts anteriores
       Object.values(App.charts).forEach(c => c?.destroy?.());
       App.charts = {};
       fn();
@@ -659,7 +634,7 @@ function renderPage(page) {
 const Page = {};
 
 /* ================================================================
-   DASHBOARD — COM CARD DE RESUMO ÚNICO NA PARTE INFERIOR
+   DASHBOARD — SEM O CARD INFERIOR DE RESUMO
 ================================================================= */
 Page.dashboard = () => {
   const hoje = new Date().toISOString().slice(0, 10);
@@ -750,52 +725,6 @@ Page.dashboard = () => {
           <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px dashed var(--border);"><span>Despesas</span><strong style="color:var(--danger);">${fmtMoney(despesaMes)}</strong></div>
           <div style="display:flex;justify-content:space-between;padding:.9rem 0;"><span style="font-weight:800;">Saldo</span><strong style="font-size:1.2rem;color:${receitaMes - despesaMes >= 0 ? 'var(--success)' : 'var(--danger)'};">${fmtMoney(receitaMes - despesaMes)}</strong></div>
           ${estoqueBaixo > 0 ? `<div style="margin-top:1rem;padding:.8rem;background:#fef3c7;border-radius:8px;font-size:.82rem;">⚠️ <strong>${estoqueBaixo} produto(s)</strong> com estoque baixo</div>` : ''}
-        </div>
-      </div>
-    </div>
-
-    <!-- =========================================== -->
-    <!-- CARD ÚNICO DE RESUMO — NA PARTE INFERIOR -->
-    <!-- =========================================== -->
-    <div class="summary-card">
-      <div class="card-header">
-        <h3>📋 Resumo Rápido</h3>
-        <small>Atualizado em tempo real</small>
-      </div>
-      <div class="card-body">
-        <div class="summary-grid">
-          <div class="summary-item" onclick="renderPage('agenda')">
-            <div class="summary-icon" style="background:#dbeafe;color:#1e40af;">📅</div>
-            <div class="summary-content">
-              <div class="summary-title">Agendamentos Hoje</div>
-              <div class="summary-value">${agsHoje.length}</div>
-              <div class="summary-sub">▲ <strong>${App.data.agendamentos.length}</strong> no total</div>
-            </div>
-          </div>
-          <div class="summary-item" onclick="renderPage('vendas')">
-            <div class="summary-icon" style="background:#d1fae5;color:#065f46;">💰</div>
-            <div class="summary-content">
-              <div class="summary-title">Vendas no Mês</div>
-              <div class="summary-value">${fmtMoney(totalMes)}</div>
-              <div class="summary-sub">▲ <strong>${vendasMes.length}</strong> vendas</div>
-            </div>
-          </div>
-          <div class="summary-item" onclick="renderPage('clientes')">
-            <div class="summary-icon" style="background:#fed7aa;color:#9a3412;">👥</div>
-            <div class="summary-content">
-              <div class="summary-title">Clientes</div>
-              <div class="summary-value">${App.data.clientes.length}</div>
-              <div class="summary-sub">▲ <strong>${App.data.pets.length}</strong> pets</div>
-            </div>
-          </div>
-          <div class="summary-item" onclick="renderPage('chat')">
-            <div class="summary-icon" style="background:#e9d5ff;color:#6b21a8;">💬</div>
-            <div class="summary-content">
-              <div class="summary-title">Chat</div>
-              <div class="summary-value">${App.data.conversas.length}</div>
-              <div class="summary-sub ${naoLidas > 0 ? 'warn' : ''}">${naoLidas > 0 ? '⚠' : '✓'} <strong>${naoLidas}</strong> não lidas</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1823,7 +1752,6 @@ window.addEventListener('beforeunload', (e) => {
 /* ============ INICIALIZAÇÃO ============ */
 document.addEventListener('DOMContentLoaded', checkAuth);
 
-// Error handler global
 window.addEventListener('error', (e) => Logger.error('global', e.message, e));
 window.addEventListener('unhandledrejection', (e) => Logger.error('promise', e.reason?.message || 'Erro', e.reason));
 </script>
