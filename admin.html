@@ -73,31 +73,111 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .icon-btn:hover { background: #e2e8f0; }
 .icon-btn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white; }
 .content { padding: 2rem; flex: 1; min-width: 0; }
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-.stat-card { background: var(--card); padding: 1.1rem 1.2rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: .9rem; transition: all .2s; cursor: pointer; min-width: 0; text-decoration: none; color: inherit; }
-.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; }
-.stat-icon.blue { background: #dbeafe; color: #1e40af; }
-.stat-icon.green { background: #d1fae5; color: #065f46; }
-.stat-icon.orange { background: #fed7aa; color: #9a3412; }
-.stat-icon.purple { background: #e9d5ff; color: #6b21a8; }
-.stat-info { min-width: 0; flex: 1; }
-.stat-value { font-size: 1.35rem; font-weight: 800; letter-spacing: -.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stat-label { font-size: .75rem; color: var(--text-soft); font-weight: 500; margin-bottom: .15rem; }
-.stat-change { font-size: .7rem; font-weight: 700; margin-top: .15rem; }
-.stat-change.up { color: var(--success); }
-.stat-change.down { color: var(--danger); }
-@media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
+
+/* ============ CARD ÚNICO DE VISÃO GERAL ============ */
+.overview-card {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  color: white;
+}
+.overview-header {
+  padding: 1.5rem 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.overview-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.overview-header .date-info {
+  font-size: .8rem;
+  opacity: .9;
+  font-weight: 500;
+}
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding: 0;
+}
+.overview-item {
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all .3s;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  border-right: 1px solid rgba(255,255,255,.15);
+}
+.overview-item:last-child {
+  border-right: none;
+}
+.overview-item:hover {
+  background: rgba(255,255,255,.15);
+  transform: translateY(-2px);
+}
+.overview-item .ov-icon {
+  font-size: 1.8rem;
+  margin-bottom: .5rem;
+  display: block;
+}
+.overview-item .ov-label {
+  font-size: .75rem;
+  opacity: .9;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: .3rem;
+}
+.overview-item .ov-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.overview-item .ov-change {
+  font-size: .72rem;
+  opacity: .85;
+  margin-top: .3rem;
+  font-weight: 600;
+}
+.overview-item .ov-change.up {
+  color: #a7f3d0;
+}
+.overview-item .ov-change.warn {
+  color: #fde68a;
+}
+@media (max-width: 900px) {
+  .overview-grid { grid-template-columns: repeat(2, 1fr); }
+  .overview-item { border-bottom: 1px solid rgba(255,255,255,.15); }
+  .overview-item:nth-child(2) { border-right: none; }
+  .overview-item:nth-child(3), .overview-item:nth-child(4) { border-bottom: none; }
+}
+@media (max-width: 500px) {
+  .overview-grid { grid-template-columns: 1fr; }
+  .overview-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); }
+  .overview-item:last-child { border-bottom: none; }
+}
+
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1rem; }
 .card-header { padding: 1.1rem 1.3rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .card-header h3 { font-size: 1rem; font-weight: 800; }
 .card-header small { font-size: .75rem; color: var(--text-soft); margin-left: auto; padding-left: .8rem; }
 .card-body { padding: 1.3rem; }
 .card-body.nopad { padding: 0; }
-.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; transition: all .2s; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem 1.1rem; border-radius: 10px; font-size: .9rem; font-weight: 700; transition: all .2s; }
 .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: 0 4px 12px rgba(102,126,234,.3); }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(102,126,234,.4); }
+.btn-primary:hover { transform: translateY(-1px); }
 .btn-ghost { background: white; border: 1px solid var(--border); color: var(--text); }
 .btn-ghost:hover { background: var(--bg); }
 .btn.loading::after { content:''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; margin-left: .3rem; }
@@ -197,6 +277,7 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
       <div class="topbar-actions">
         <button class="icon-btn" title="Notificações">🔔<span class="dot"></span></button>
         <button class="icon-btn" title="Atualizar" onclick="atualizarDados()">🔄</button>
+        <button class="icon-btn" title="Ajuda">❓</button>
       </div>
     </div>
     <div class="content" id="pageContent"></div>
@@ -311,6 +392,8 @@ async function atualizarDados() {
 function renderDashboard() {
   const hoje = new Date().toISOString().slice(0, 10);
   const mesAtual = new Date().toISOString().slice(0, 7);
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  
   const agsHoje = App.data.agendamentos.filter(a => a.data_hora?.slice(0, 10) === hoje);
   const agsProximos = App.data.agendamentos.filter(a => a.data_hora >= new Date().toISOString() && a.status !== 'cancelado').slice(0, 6);
   const vendasMes = App.data.vendas.filter(v => v.created_at?.slice(0, 7) === mesAtual);
@@ -321,39 +404,38 @@ function renderDashboard() {
   const estoqueBaixo = App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo || 0)).length;
 
   $('#pageContent').innerHTML = `
-    <div class="stats-grid">
-      <a href="agenda.html" class="stat-card">
-        <div class="stat-icon blue">📅</div>
-        <div class="stat-info">
-          <div class="stat-label">Agendamentos Hoje</div>
-          <div class="stat-value">${agsHoje.length}</div>
-          <div class="stat-change up">▲ ${App.data.agendamentos.length} no total</div>
-        </div>
-      </a>
-      <a href="vendas.html" class="stat-card">
-        <div class="stat-icon green">💰</div>
-        <div class="stat-info">
-          <div class="stat-label">Vendas no Mês</div>
-          <div class="stat-value">${fmtMoney(totalMes)}</div>
-          <div class="stat-change up">${vendasMes.length} vendas</div>
-        </div>
-      </a>
-      <a href="clientes.html" class="stat-card">
-        <div class="stat-icon orange">👥</div>
-        <div class="stat-info">
-          <div class="stat-label">Clientes</div>
-          <div class="stat-value">${App.data.clientes.length}</div>
-          <div class="stat-change up">${App.data.pets.length} pets</div>
-        </div>
-      </a>
-      <a href="chat.html" class="stat-card">
-        <div class="stat-icon purple">💬</div>
-        <div class="stat-info">
-          <div class="stat-label">Chat</div>
-          <div class="stat-value">${App.data.conversas.length}</div>
-          <div class="stat-change">${naoLidas} não lidas</div>
-        </div>
-      </a>
+    <!-- CARD ÚNICO DE VISÃO GERAL -->
+    <div class="overview-card">
+      <div class="overview-header">
+        <h3>📊 Visão Geral</h3>
+        <span class="date-info">${dataHoje}</span>
+      </div>
+      <div class="overview-grid">
+        <a href="agenda.html" class="overview-item">
+          <span class="ov-icon">📅</span>
+          <div class="ov-label">Agendamentos Hoje</div>
+          <div class="ov-value">${agsHoje.length}</div>
+          <div class="ov-change up">▲ ${App.data.agendamentos.length} no total</div>
+        </a>
+        <a href="vendas.html" class="overview-item">
+          <span class="ov-icon">💰</span>
+          <div class="ov-label">Vendas no Mês</div>
+          <div class="ov-value">${fmtMoney(totalMes)}</div>
+          <div class="ov-change up">${vendasMes.length} vendas</div>
+        </a>
+        <a href="clientes.html" class="overview-item">
+          <span class="ov-icon">👥</span>
+          <div class="ov-label">Clientes</div>
+          <div class="ov-value">${App.data.clientes.length}</div>
+          <div class="ov-change up">${App.data.pets.length} pets</div>
+        </a>
+        <a href="chat.html" class="overview-item">
+          <span class="ov-icon">💬</span>
+          <div class="ov-label">Chat</div>
+          <div class="ov-value">${App.data.conversas.length}</div>
+          <div class="ov-change ${naoLidas > 0 ? 'warn' : ''}">${naoLidas > 0 ? '⚠ ' : '✓ '}${naoLidas} não lidas</div>
+        </a>
+      </div>
     </div>
 
     <div class="quick-grid">
@@ -367,13 +449,13 @@ function renderDashboard() {
 
     <div class="dashboard-grid">
       <div class="card">
-        <div class="card-header"><h3>📈 Faturamento últimos 7 dias</h3></div>
+        <div class="card-header"><h3>📈 Faturamento últimos 7 dias</h3><small>Atualizado agora</small></div>
         <div class="card-body"><canvas id="chartVendas" height="100"></canvas></div>
       </div>
       <div class="card">
         <div class="card-header"><h3>🔔 Próximos Agendamentos</h3></div>
         <div class="card-body nopad" style="padding:.5rem 1rem;">
-          ${agsProximos.length === 0 ? '<div style="text-align:center;padding:2rem;color:var(--text-soft);">Nenhum agendamento</div>' :
+          ${agsProximos.length === 0 ? '<div style="text-align:center;padding:2rem;color:var(--text-soft);">Nenhum agendamento próximo</div>' :
             agsProximos.map(a => `
               <div class="timeline-item">
                 <div class="timeline-icon" style="background:#dbeafe;color:#1e40af;">🐾</div>
