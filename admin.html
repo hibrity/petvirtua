@@ -74,99 +74,127 @@ input, select, textarea { font-family: inherit; font-size: .95rem; }
 .icon-btn .dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white; }
 .content { padding: 2rem; flex: 1; min-width: 0; }
 
-/* ============ CARD ÚNICO DE VISÃO GERAL ============ */
+/* ============ CARD COMPACTO DE VISÃO GERAL ============ */
 .overview-card {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow);
   margin-bottom: 1.5rem;
   overflow: hidden;
-  color: white;
 }
 .overview-header {
-  padding: 1.5rem 1.5rem 1rem;
+  padding: .9rem 1.2rem;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: #fafbfc;
 }
 .overview-header h3 {
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text);
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: .4rem;
 }
 .overview-header .date-info {
-  font-size: .8rem;
-  opacity: .9;
+  font-size: .75rem;
+  color: var(--text-soft);
   font-weight: 500;
 }
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
-  padding: 0;
 }
 .overview-item {
-  padding: 1.5rem;
+  padding: 1rem 1.2rem;
   cursor: pointer;
-  transition: all .3s;
-  position: relative;
+  transition: all .2s;
   text-decoration: none;
   color: inherit;
-  display: block;
-  border-right: 1px solid rgba(255,255,255,.15);
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  border-right: 1px solid var(--border);
+  position: relative;
 }
 .overview-item:last-child {
   border-right: none;
 }
 .overview-item:hover {
-  background: rgba(255,255,255,.15);
-  transform: translateY(-2px);
+  background: #f8fafc;
+}
+.overview-item:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
 }
 .overview-item .ov-icon {
-  font-size: 1.8rem;
-  margin-bottom: .5rem;
-  display: block;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.overview-item .ov-icon.blue { background: #dbeafe; color: #1e40af; }
+.overview-item .ov-icon.green { background: #d1fae5; color: #065f46; }
+.overview-item .ov-icon.orange { background: #fed7aa; color: #9a3412; }
+.overview-item .ov-icon.purple { background: #e9d5ff; color: #6b21a8; }
+.overview-item .ov-content {
+  min-width: 0;
+  flex: 1;
 }
 .overview-item .ov-label {
-  font-size: .75rem;
-  opacity: .9;
-  font-weight: 500;
+  font-size: .7rem;
+  color: var(--text-soft);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .5px;
-  margin-bottom: .3rem;
+  letter-spacing: .3px;
+  margin-bottom: .15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .overview-item .ov-value {
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   font-weight: 800;
-  letter-spacing: -.5px;
+  letter-spacing: -.3px;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .overview-item .ov-change {
-  font-size: .72rem;
-  opacity: .85;
-  margin-top: .3rem;
+  font-size: .68rem;
+  margin-top: .1rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.overview-item .ov-change.up {
-  color: #a7f3d0;
-}
-.overview-item .ov-change.warn {
-  color: #fde68a;
-}
-@media (max-width: 900px) {
+.overview-item .ov-change.up { color: var(--success); }
+.overview-item .ov-change.warn { color: var(--warning); }
+.overview-item .ov-change.neutral { color: var(--text-soft); }
+
+@media (max-width: 1000px) {
   .overview-grid { grid-template-columns: repeat(2, 1fr); }
-  .overview-item { border-bottom: 1px solid rgba(255,255,255,.15); }
   .overview-item:nth-child(2) { border-right: none; }
-  .overview-item:nth-child(3), .overview-item:nth-child(4) { border-bottom: none; }
+  .overview-item:nth-child(1), .overview-item:nth-child(2) { border-bottom: 1px solid var(--border); }
 }
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   .overview-grid { grid-template-columns: 1fr; }
-  .overview-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.15); }
+  .overview-item { border-right: none; border-bottom: 1px solid var(--border); }
   .overview-item:last-child { border-bottom: none; }
+  .overview-item .ov-value { font-size: 1.05rem; }
 }
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1rem; }
@@ -392,7 +420,7 @@ async function atualizarDados() {
 function renderDashboard() {
   const hoje = new Date().toISOString().slice(0, 10);
   const mesAtual = new Date().toISOString().slice(0, 7);
-  const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' });
   
   const agsHoje = App.data.agendamentos.filter(a => a.data_hora?.slice(0, 10) === hoje);
   const agsProximos = App.data.agendamentos.filter(a => a.data_hora >= new Date().toISOString() && a.status !== 'cancelado').slice(0, 6);
@@ -404,7 +432,7 @@ function renderDashboard() {
   const estoqueBaixo = App.data.produtos.filter(p => p.estoque_atual <= (p.estoque_minimo || 0)).length;
 
   $('#pageContent').innerHTML = `
-    <!-- CARD ÚNICO DE VISÃO GERAL -->
+    <!-- CARD COMPACTO DE VISÃO GERAL -->
     <div class="overview-card">
       <div class="overview-header">
         <h3>📊 Visão Geral</h3>
@@ -412,28 +440,36 @@ function renderDashboard() {
       </div>
       <div class="overview-grid">
         <a href="agenda.html" class="overview-item">
-          <span class="ov-icon">📅</span>
-          <div class="ov-label">Agendamentos Hoje</div>
-          <div class="ov-value">${agsHoje.length}</div>
-          <div class="ov-change up">▲ ${App.data.agendamentos.length} no total</div>
+          <div class="ov-icon blue">📅</div>
+          <div class="ov-content">
+            <div class="ov-label">Agendamentos Hoje</div>
+            <div class="ov-value">${agsHoje.length}</div>
+            <div class="ov-change up">▲ ${App.data.agendamentos.length} no total</div>
+          </div>
         </a>
         <a href="vendas.html" class="overview-item">
-          <span class="ov-icon">💰</span>
-          <div class="ov-label">Vendas no Mês</div>
-          <div class="ov-value">${fmtMoney(totalMes)}</div>
-          <div class="ov-change up">${vendasMes.length} vendas</div>
+          <div class="ov-icon green">💰</div>
+          <div class="ov-content">
+            <div class="ov-label">Vendas no Mês</div>
+            <div class="ov-value">${fmtMoney(totalMes)}</div>
+            <div class="ov-change up">${vendasMes.length} vendas</div>
+          </div>
         </a>
         <a href="clientes.html" class="overview-item">
-          <span class="ov-icon">👥</span>
-          <div class="ov-label">Clientes</div>
-          <div class="ov-value">${App.data.clientes.length}</div>
-          <div class="ov-change up">${App.data.pets.length} pets</div>
+          <div class="ov-icon orange">👥</div>
+          <div class="ov-content">
+            <div class="ov-label">Clientes</div>
+            <div class="ov-value">${App.data.clientes.length}</div>
+            <div class="ov-change up">${App.data.pets.length} pets</div>
+          </div>
         </a>
         <a href="chat.html" class="overview-item">
-          <span class="ov-icon">💬</span>
-          <div class="ov-label">Chat</div>
-          <div class="ov-value">${App.data.conversas.length}</div>
-          <div class="ov-change ${naoLidas > 0 ? 'warn' : ''}">${naoLidas > 0 ? '⚠ ' : '✓ '}${naoLidas} não lidas</div>
+          <div class="ov-icon purple">💬</div>
+          <div class="ov-content">
+            <div class="ov-label">Chat</div>
+            <div class="ov-value">${App.data.conversas.length}</div>
+            <div class="ov-change ${naoLidas > 0 ? 'warn' : 'neutral'}">${naoLidas > 0 ? '⚠ ' : ''}${naoLidas} não lidas</div>
+          </div>
         </a>
       </div>
     </div>
